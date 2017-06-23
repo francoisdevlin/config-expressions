@@ -19,7 +19,7 @@ while read -r INPUT EXPECTED_OUTPUT; do
 	else
 		echo -e "\x1B[1;31m$RESULT\x1B[0m - Input: '$INPUT' Actual: '$ACTUAL_OUTPUT' Expected: '$EXPECTED_OUTPUT'"
 	fi
-done < passing-data.csv
+done < <(sed -e 's/#.*//' passing-data.csv | grep '.')
 
 echo "There were $OUTPUT_CODE failing tests"
 if [ "$OUTPUT_CODE" != "0" ]; then
