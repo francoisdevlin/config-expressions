@@ -38,10 +38,10 @@ end
 def wildcard_hit(path,config)
 	built_string, nested_hash = build_the_guys(path,config)
 	nested_hash.reverse.each do |stack_entry|
-		stack_entry.select! do | key, value |
+		stack_entry = stack_entry.select do | key, value |
 			key.start_with? '*.'
 		end
-		stack_entry.select! do | key, value |
+		stack_entry = stack_entry.select do | key, value |
 			clean_key = key.sub '*.', ''
 			key_path = clean_key.split(".")	
 			reverse_path = path.reverse
@@ -53,16 +53,17 @@ def wildcard_hit(path,config)
 			return true, stack_entry.first[1]
 		end
 	end
+	return false, nil
 end
 
 def ends_with(path,config)
-	built_string,nested_hash = build_the_guys(path,config)
+	built_string, nested_hash = build_the_guys(path,config)
 	#We know that built string won't be a match...
 	nested_hash.reverse.each do |stack_entry|
-		stack_entry.select! do | key, value |
+		stack_entry = stack_entry.select do | key, value |
 			key.start_with? '**'
 		end
-		stack_entry.select! do | key, value |
+		stack_entry = stack_entry.select do | key, value |
 			clean_key = key.sub '**.', ''
 			key_path = clean_key.split(".")	
 			reverse_path = path.reverse
@@ -79,12 +80,13 @@ def ends_with(path,config)
 end
 
 attempts = [
-	Proc.new{ |p,c| direct_hit(p,c)},
-	Proc.new{ |p,c| wildcard_hit(p,c)},
-	Proc.new{ |p,c| ends_with(p,c)},
+	[:direct_hit, Proc.new{ |p,c| direct_hit(p,c)}],
+	[:wildcard_hit, Proc.new{ |p,c| wildcard_hit(p,c)}],
+	[:ends_with, Proc.new{ |p,c| ends_with(p,c)}],
 ]
 
-attempts.each do |attempt|
+attempts.each do |data|
+	name,attempt = data
 	success, value = attempt.call(path,config)
 	if success
 		puts value
