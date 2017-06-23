@@ -47,6 +47,27 @@ def build_the_guys(path,config)
 	return built_string,nested_hash
 end
 
+def substitute_hit(path,config)
+	built_string, nested_hash = build_the_guys(path,config)
+	nested_hash.reverse.each do |stack_entry|
+		stack_entry = stack_entry.select do | key, value |
+			key.start_with? '$'
+		end
+		stack_entry = stack_entry.select do | key, value |
+			clean_key = key.sub '$', ''
+			key_path = clean_key.split(".")	
+			reverse_path = path.reverse
+			reverse_key_path = key_path.reverse
+			reverse_path[0] == reverse_key_path[0]
+		end
+		#TODO: SORT TO PREFER LONGER EXACT MATCHES
+		if stack_entry.size == 1
+			return true, built_string.split(".")[0]
+		end
+	end
+	return false, nil
+end
+
 def direct_hit(path,config)
 	built_string,nested_hash = build_the_guys(path,config)
 	if built_string == ""
@@ -101,6 +122,7 @@ end
 
 attempts = [
 	[:direct_hit, Proc.new{ |p,c| direct_hit(p,c)}],
+	[:substitute_hit, Proc.new{ |p,c| substitute_hit(p,c)}],
 	[:wildcard_hit, Proc.new{ |p,c| wildcard_hit(p,c)}],
 	[:ends_with, Proc.new{ |p,c| ends_with(p,c)}],
 ]

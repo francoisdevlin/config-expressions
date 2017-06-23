@@ -1,5 +1,6 @@
 #Hello
 localhost.db.driver org.h2.Driver
+localhost.sample.db.domain sample
 
 dev02.sample.db.password dev002a_
 dev02.sample.db.username sa
