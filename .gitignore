@@ -1,0 +1,10 @@
+/*.iml
+/*.log
+/.idea
+.idea/*
+.idea/copyright/*
+.idea/fileTemplates/*
+.idea/fileTemplates/includes/*
+*/*.iml
+**/target/
+*.swp
