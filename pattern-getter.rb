@@ -7,6 +7,26 @@ path = conf_path.split('.')
 config_file = File.read("conf.jsonw")
 config = JSON.parse(config_file)
 
+def has_element(key,local_map,globals)
+	return true if local_map.key? key
+	return false unless local_map.key? '!include'
+	local_map['!include'].each do |reference|
+		referenced_map = globals["!" + reference]
+		return true if referenced_map.key? key
+	end
+	return false
+end
+
+def get_element(key,local_map,globals)
+	return local_map[key] if local_map.key? key
+	return nil unless local_map.key? '!include'
+	local_map['!include'].each do |reference|
+		referenced_map = globals["!" + reference]
+		return referenced_map[key] if referenced_map.key? key
+	end
+	return nil
+end
+
 def build_the_guys(path,config)
 	visited_hash = config
 	nested_hash = []
@@ -15,8 +35,8 @@ def build_the_guys(path,config)
 	built_string=""
 	while i<path.size  do
 		built_string+=path[i]
-		if visited_hash.key? built_string
-			visited_hash=visited_hash[built_string]
+		if has_element(built_string,visited_hash, config)
+			visited_hash = get_element(built_string, visited_hash, config)
 			nested_hash << visited_hash
 			built_string=""
 		else

@@ -15,9 +15,9 @@ while read -r INPUT EXPECTED_OUTPUT; do
 		RESULT="FAIL";
 	fi
 	if [ "$RESULT" == "PASS" ]; then
-		echo -e "\x1B[1;32m$RESULT\x1B[0m - Actual: '$ACTUAL_OUTPUT' Expected:'$EXPECTED_OUTPUT'"
+		echo -e "\x1B[1;32m$RESULT\x1B[0m - Input: '$INPUT' Actual: '$ACTUAL_OUTPUT' Expected: '$EXPECTED_OUTPUT'"
 	else
-		echo -e "\x1B[1;31m$RESULT\x1B[0m - Actual: '$ACTUAL_OUTPUT' Expected:'$EXPECTED_OUTPUT'"
+		echo -e "\x1B[1;31m$RESULT\x1B[0m - Input: '$INPUT' Actual: '$ACTUAL_OUTPUT' Expected: '$EXPECTED_OUTPUT'"
 	fi
 done < passing-data.csv
 
