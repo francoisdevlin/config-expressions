@@ -12,7 +12,6 @@ class String
 	def gray; "\e[37m#{self}\e[0m" end
 end
 
-
 conf_path = ARGV[0];
 
 path = conf_path.split('.')
@@ -20,7 +19,6 @@ config_file = File.read("conf.jsonw")
 config = JSON.parse(config_file)
 
 def determine_matches(local_path,config)
-	#print "#{local_path}\n"
 	matches = []
 	sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
 	(0..local_path.size).each do |index|
@@ -33,7 +31,12 @@ def determine_matches(local_path,config)
 	return matches
 end
 
-class DeepWildcard 
+class Label
+	@variable
+	attr_accessor :variable
+end
+
+class DeepWildcard < Label
 	@next_path
 	attr_accessor :next_path
 
@@ -53,7 +56,7 @@ class DeepWildcard
 	end
 end
 
-class DirectHit
+class DirectHit < Label
 	@element
 	attr_accessor :element
 	def initialize(element)
@@ -71,7 +74,7 @@ class DirectHit
 	end
 end
 
-class EnumHit
+class EnumHit < Label
 	@entries
 	attr_accessor :entries
 	def initialize(entries)
@@ -89,7 +92,7 @@ class EnumHit
 	end
 end
 
-class WildcardHit
+class WildcardHit < Label
 	def consume(path)
 		return path.drop(1) if path[0]
 		#Let's be explicit about return nil, since we're using it as a poor man's option
@@ -101,20 +104,49 @@ class WildcardHit
 	end
 end
 
+class RegexHit < Label
+	@regex
+	attr_accessor :regex
+	def initialize(regex)
+		@regex = /#{Regexp.new(regex)}/
+	end
+
+	def consume(path)
+		return path.drop(1) if path[0] and path[0].scan(@regex) != []
+		#Let's be explicit about return nil, since we're using it as a poor man's option
+		return nil
+	end
+
+	def to_s
+		"RegexHit #{@regex}"
+	end
+end
+
+def get_label_info(key)
+	matches = key.scan(/(.*)\$(\w+)$/)
+	return key,nil if matches == []
+	return matches[0]	
+end
+
 def parse_processors(key)
 	split_keys = key.split('.')
 	processors = split_keys.each_index.collect do |index|
-		label = split_keys[index]
-		next_label = split_keys[index+1]
+		label, variable= get_label_info(split_keys[index])
+		result = nil
 		if label == "**"
-			DeepWildcard.new(next_label)
+			next_label = split_keys[index+1]
+			result = DeepWildcard.new(next_label)
 		elsif label == "*"
-			WildcardHit.new()
+			result = WildcardHit.new()
+		elsif label.start_with?("/") and label.end_with?("/")
+			result = RegexHit.new(label[1..label.size()-2])
 		elsif label.include? ","
-			EnumHit.new(label.split(","))
+			result = EnumHit.new(label.split(","))
 		else
-			DirectHit.new(label)
+			result = DirectHit.new(label)
 		end
+		result.variable = variable
+		result
 	end
 	return processors
 end
@@ -135,6 +167,9 @@ data = [
 	["test.a,b","test.a",true],
 	["test.a,b","test.b",true],
 	["test.a,b","test.c",false],
+	["test./[a-z]/","test.a",true],
+	["test./[a-z]+/","test.a",true],
+	["test./[a-z]/","test.A",false],
 	["*.a","test.a",true],
 	["*.b","test.a",false],
 	["no-key","test.a",false],
@@ -167,6 +202,7 @@ def compare_patterns(left,right)
 	symbol_order = [
 		"DirectHit",
 		"EnumHit",
+		"RegexHit",
 		"WildcardHit",
 		"DeepWildcard",
 	]
@@ -201,7 +237,7 @@ sort_examples = [
 	["a","b","c"],
 	["a","a.a","a.a.a"],
 	["c","b.c","a.b.c","**.a"],
-	["a","a,b","*","**"],
+	["a","a,b","/abc/","*","**"],
 	["a","*","a.b","a.*","*.b"],
 	["a","*","a.b","a.*","*.b"],
 	["a","*","a.b","a.*","*.b","*.c"],
