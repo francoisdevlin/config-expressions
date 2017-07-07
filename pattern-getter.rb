@@ -45,10 +45,14 @@ class DeepWildcard < Label
 	end
 
 	def consume(path)
-		return [] if @next_path.nil?
+		both(path)[0]
+	end
+
+	def both(path)
+		return [[], path] if @next_path.nil?
 		drop_index = path.each_index.select{|i| path [i] == @next_path}.max
-		return nil unless drop_index
-		return path.drop(drop_index)
+		return [nil, nil] unless drop_index
+		return [path.drop(drop_index), path.take(drop_index)]
 	end
 
 	def to_s
@@ -64,9 +68,13 @@ class DirectHit < Label
 	end
 
 	def consume(path)
-		return path.drop(1) if(path[0] == @element)	
+		both(path)[0]
+	end
+
+	def both(path)
+		return [path.drop(1),path.take(1)] if(path[0] == @element)	
 		#Let's be explicit about return nil, since we're using it as a poor man's option
-		return nil
+		return [nil,nil]
 	end
 
 	def to_s
@@ -82,9 +90,13 @@ class EnumHit < Label
 	end
 
 	def consume(path)
-		return path.drop(1) if @entries.index(path[0])
+		both(path)[0]
+	end
+
+	def both(path)
+		return [path.drop(1),path.take(1)] if @entries.index(path[0])
 		#Let's be explicit about return nil, since we're using it as a poor man's option
-		return nil
+		return [nil,nil]
 	end
 
 	def to_s
@@ -94,9 +106,13 @@ end
 
 class WildcardHit < Label
 	def consume(path)
-		return path.drop(1) if path[0]
+		both(path)[0]
+	end
+
+	def both(path)
+		return [path.drop(1),path.take(1)] if path[0]
 		#Let's be explicit about return nil, since we're using it as a poor man's option
-		return nil
+		return [nil,nil]
 	end
 
 	def to_s
@@ -112,9 +128,13 @@ class RegexHit < Label
 	end
 
 	def consume(path)
-		return path.drop(1) if path[0] and path[0].scan(@regex) != []
+		both(path)[0]
+	end
+
+	def both(path)
+		return [path.drop(1), path.take(1)] if path[0] and path[0].scan(@regex) != []
 		#Let's be explicit about return nil, since we're using it as a poor man's option
-		return nil
+		return [nil,nil]
 	end
 
 	def to_s
@@ -257,7 +277,21 @@ def recursive_search(path,value)
 		sub_path, hit_key = result
 		next_value = value[hit_key]
 		next if next_value.nil?
-		return next_value unless next_value.instance_of? Hash
+		unless next_value.instance_of? Hash
+			processors = parse_processors(hit_key)
+			local_path = path
+			variables = {}
+			processors.each do |processor|
+				local_path,accum = processor.both(local_path)
+				variables[processor.variable] = accum.join(".") if processor.variable
+				#print "#{local_path},#{accum}\n"
+			end
+			#print "#{sub_path}, #{hit_key}, #{variables}\n"
+			variables.each do |var, var_val|
+				next_value = next_value.gsub("${#{var}}",var_val)
+			end
+			return next_value 
+		end
 		next_result = recursive_search(path.drop(sub_path.size),next_value)
 		return next_result unless next_result.nil?
 	end
