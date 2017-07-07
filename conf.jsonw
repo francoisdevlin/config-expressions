@@ -2,7 +2,7 @@
 	"**.username":"sa",
 	"**.password":"",
 	"**.db.driver":"oracle.jdbc.OracleDriver",
-	"!db.usernames": {
+	"*": {
 		"payment.db.username" : "DDO_PAYMT_DBA_READ",
 		"account.db.username" : "DDO_ACCT_DBA_READ",
 		"apply.db.username" : "DDO_APPLY_DBA_READ",
@@ -13,7 +13,7 @@
 		"analyticsgateway.db.username" : "ODS_ANLYTC_GTWY_DBA"
 	},
 	"localhost":{
-		"$domain.db.domain":"$domain",
+		"*$domain.db.domain":"${domain}",
 		"db.driver" : "org.h2.Driver",
 		"analyticsgateway.db.domain" : "analytics-gateway",
 		"idmap.db.domain" : "platform-integration",
@@ -23,64 +23,23 @@
 		"db.driver" : "org.h2.Driver",
 		"*.db.url" : "jdbc:h2:/local/domains/h2/payments;AUTO_SERVER=TRUE;MODE=Oracle"
 	},
-	"dev02" : {
-		"*.db.url" : "jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc",
-		"*.db.password" : "dev002a_",
-		"!include" : [
-			"db.usernames"
-		]
-	},
-	"dev03" : {
-		"*.db.url" : "jdbc:oracle:thin:@dephcld.juniper.com:1521/deph3debtomcatsvc",
-		"*.db.password" : "dev002a_",
-		"!include" : [
-			"db.usernames"
-		]
-	},
 	"ukdev" : {
 		"*.db.url" : "jdbc:oracle:thin:@//odu1-12-sl-uat.barcapint.com:3521/BCardNG.intranet.barcapint.com",
-		"!include" : [
-			"db.usernames"
-		],
 		"payment.db.password" : "Barclays39#",
 		"account.db.password" : "Barclays09#",
 		"apply.db.password" : "Barclays12#",
 		"communications.db.password" : "Barclays33#",
 		"idmap.db.password" : "Barclays#123"
 	},
-	"qa01" :{
-		"*.db.url" : "jdbc:oracle:thin:@qodcld.juniper.com:1521/qdebtomcatsvc",
-		"*.db.password" : "deb09_Qa7",
-		"!include" : [
-			"db.usernames"
-		]
-	},
-	"qa02" :{
-		"*.db.url" : "jdbc:oracle:thin:@roracld.juniper.com:1521/qa02crdeb_svc",
-		"*.db.password" : "deb09_Qa7",
-		"!include" : [
-			"db.usernames"
-		]
-	},
-	"qa03" : {
-		"*.db.url" : "jdbc:oracle:thin:@qephcld.juniper.com:1521/qeph3debbatchsvc",
-		"*.db.password" : "dev002a_",
-		"!include" : [
-			"db.usernames"
-		]
-	},
-	"qa04" :{
-		"*.db.url" : "jdbc:oracle:thin:@172.18.223.135:1521/DEVOPS01",
-		"*.db.password" : "deb09_Qa7",
-		"!include" : [
-			"db.usernames"
-		]
-	},
-	"cicluster" : {
-		"*.db.url" : "jdbc:oracle:thin:@dephcld.juniper.com:1521/deph3debtomcatsvc",
-		"*.db.password" : "dev002a_",
-		"!include" : [
-			"db.usernames"
-		]
-	}
+
+	"dev02,dev03,qa03,cicluster.*.db.password" : "dev002a_",
+	"qa01,qa02,qa04.*.db.password" : "deb09_Qa7",
+
+	"dev02.*.db.url" : "jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc",
+	"dev03.*.db.url" : "jdbc:oracle:thin:@dephcld.juniper.com:1521/deph3debtomcatsvc",
+	"qa01.*.db.url" : "jdbc:oracle:thin:@qodcld.juniper.com:1521/qdebtomcatsvc",
+	"qa02.*.db.url" : "jdbc:oracle:thin:@roracld.juniper.com:1521/qa02crdeb_svc",
+	"qa03.*.db.url" : "jdbc:oracle:thin:@qephcld.juniper.com:1521/qeph3debbatchsvc",
+	"qa04.*.db.url" : "jdbc:oracle:thin:@172.18.223.135:1521/DEVOPS01",
+	"cicluster.*.db.url" : "jdbc:oracle:thin:@dephcld.juniper.com:1521/deph3debtomcatsvc"
 }

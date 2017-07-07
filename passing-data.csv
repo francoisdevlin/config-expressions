@@ -9,3 +9,5 @@ localhost.sample.db.username sa
 localhost.sample.db.password
 
 qa01.sample.db.password deb09_Qa7
+
+dev02.sample.db.url jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc

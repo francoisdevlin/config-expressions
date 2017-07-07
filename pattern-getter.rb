@@ -1,140 +1,236 @@
 #!/usr/bin/env ruby
 require 'json'
 
+class String
+	def black; "\e[30m#{self}\e[0m" end
+	def red; "\e[31m#{self}\e[0m" end
+	def green; "\e[32m#{self}\e[0m" end
+	def brown; "\e[33m#{self}\e[0m" end
+	def blue; "\e[34m#{self}\e[0m" end
+	def magenta; "\e[35m#{self}\e[0m" end
+	def cyan; "\e[36m#{self}\e[0m" end
+	def gray; "\e[37m#{self}\e[0m" end
+end
+
+
 conf_path = ARGV[0];
 
 path = conf_path.split('.')
 config_file = File.read("conf.jsonw")
 config = JSON.parse(config_file)
 
-def has_element(key,local_map,globals)
-	return true if local_map.key? key
-	return false unless local_map.key? '!include'
-	local_map['!include'].each do |reference|
-		referenced_map = globals["!" + reference]
-		return true if referenced_map.key? key
+def determine_matches(local_path,config)
+	#print "#{local_path}\n"
+	matches = []
+	sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
+	(0..local_path.size).each do |index|
+		sub_path = local_path.take(index+1)
+		sorted_matches.each do |key|
+			result = match(key,sub_path)
+			matches << [sub_path,key] if result
+		end
 	end
-	return false
+	return matches
 end
 
-def get_element(key,local_map,globals)
-	return local_map[key] if local_map.key? key
-	return nil unless local_map.key? '!include'
-	local_map['!include'].each do |reference|
-		referenced_map = globals["!" + reference]
-		return referenced_map[key] if referenced_map.key? key
+class DeepWildcard 
+	@next_path
+	attr_accessor :next_path
+
+	def initialize(next_path)
+		@next_path= next_path
+	end
+
+	def consume(path)
+		return [] if @next_path.nil?
+		drop_index = path.each_index.select{|i| path [i] == @next_path}.max
+		return nil unless drop_index
+		return path.drop(drop_index)
+	end
+
+	def to_s
+		"DeepWildcard #{@next_path}"
+	end
+end
+
+class DirectHit
+	@element
+	attr_accessor :element
+	def initialize(element)
+		@element= element
+	end
+
+	def consume(path)
+		return path.drop(1) if(path[0] == @element)	
+		#Let's be explicit about return nil, since we're using it as a poor man's option
+		return nil
+	end
+
+	def to_s
+		"DirectHit #{@element}"
+	end
+end
+
+class EnumHit
+	@entries
+	attr_accessor :entries
+	def initialize(entries)
+		@entries = entries
+	end
+
+	def consume(path)
+		return path.drop(1) if @entries.index(path[0])
+		#Let's be explicit about return nil, since we're using it as a poor man's option
+		return nil
+	end
+
+	def to_s
+		"EnumHit #{@entries}"
+	end
+end
+
+class WildcardHit
+	def consume(path)
+		return path.drop(1) if path[0]
+		#Let's be explicit about return nil, since we're using it as a poor man's option
+		return nil
+	end
+
+	def to_s
+		"Wildcard Hit"
+	end
+end
+
+def parse_processors(key)
+	split_keys = key.split('.')
+	processors = split_keys.each_index.collect do |index|
+		label = split_keys[index]
+		next_label = split_keys[index+1]
+		if label == "**"
+			DeepWildcard.new(next_label)
+		elsif label == "*"
+			WildcardHit.new()
+		elsif label.include? ","
+			EnumHit.new(label.split(","))
+		else
+			DirectHit.new(label)
+		end
+	end
+	return processors
+end
+
+def match(key,path)
+	processors = parse_processors(key)
+	processors.each do |processor|
+		path = processor.consume(path)
+		if(path.nil?)
+			return false
+		end
+	end
+	return path.size == 0
+end
+
+data = [
+	["test.a","test.a",true],
+	["test.a,b","test.a",true],
+	["test.a,b","test.b",true],
+	["test.a,b","test.c",false],
+	["*.a","test.a",true],
+	["*.b","test.a",false],
+	["no-key","test.a",false],
+	["**.a","test.b",false],
+	["**.a","test.a",true],
+	["**.a.b.c","test.a.b.c",true],
+	["a.**.a","a.test.a",true],
+	["a.**.a","a.test.1.a",true],
+	["a.**.a","a.test.1.2.a",true],
+	["a.**.a","a.a",true],
+	["a.**.a","a.test.a.test.a",true],
+	["a.**.a","a.test.a.b",false],
+	["a.**.a","b.test.a",false],
+	["a.**.a","test.a",false],
+	["a.**.a","test.a.a",false],
+	["**.other","a",false],
+]
+
+data.each do |entry| 
+	key, path_text, expected = entry
+	test_path = path_text.split(".")
+	actual = match(key,test_path)
+	output =  "'#{key}', '#{path_text}', Expected: '#{expected}' Actual:'#{actual}'  \n"
+	output = actual == expected ? "PASS ".green + output : "FAIL ".red + output
+	#print output
+end
+
+def compare_patterns(left,right)
+	deep_wildcard_penalty=10000
+	symbol_order = [
+		"DirectHit",
+		"EnumHit",
+		"WildcardHit",
+		"DeepWildcard",
+	]
+	left_processors = parse_processors(left)
+	right_processors = parse_processors(right)
+	left_size = left_processors.size
+	left_processors.each {|processor| left_size+=deep_wildcard_penalty if processor.instance_of? DeepWildcard}
+	right_size = right_processors.size
+	right_processors.each {|processor| right_size+=deep_wildcard_penalty if processor.instance_of? DeepWildcard}
+	result = left_size.<=> right_size
+	return result if result !=0
+	(0..left_size).each do |index|
+		leftProc = left_processors[index]
+		rightProc = right_processors[index]
+		leftWeight = symbol_order.index leftProc.class.name
+		rightWeight = symbol_order.index rightProc.class.name
+		result = leftWeight.<=> rightWeight
+		return result if result !=0
+	end
+	(0..left_size).each do |index|
+		leftProc = left_processors[index]
+		rightProc = right_processors[index]
+		if leftProc.class.name == "DirectHit"
+			result = leftProc.element.<=>rightProc.element
+			return result if result !=0
+		end
+	end
+	return 0
+end
+
+sort_examples = [
+	["a","b","c"],
+	["a","a.a","a.a.a"],
+	["c","b.c","a.b.c","**.a"],
+	["a","a,b","*","**"],
+	["a","*","a.b","a.*","*.b"],
+	["a","*","a.b","a.*","*.b"],
+	["a","*","a.b","a.*","*.b","*.c"],
+]
+
+sort_examples.each do |entry|
+	shuffled = entry.shuffle
+	sorted = shuffled.sort {|a,b| compare_patterns a, b}
+	output = "Expected: '#{entry}' Actual: '#{sorted}' Shuffled: '#{shuffled}'\n"
+	output = sorted == entry ? "PASS ".green + output : "FAIL ".red + output
+	#print output
+end
+
+def recursive_search(path,value)
+	results = determine_matches(path,value)
+	results.each do |result|
+		sub_path, hit_key = result
+		next_value = value[hit_key]
+		next if next_value.nil?
+		return next_value unless next_value.instance_of? Hash
+		next_result = recursive_search(path.drop(sub_path.size),next_value)
+		return next_result unless next_result.nil?
 	end
 	return nil
 end
 
-def build_the_guys(path,config)
-	visited_hash = config
-	nested_hash = []
-	nested_hash << visited_hash
-	i=0;
-	built_string=""
-	while i<path.size  do
-		built_string+=path[i]
-		if has_element(built_string,visited_hash, config)
-			visited_hash = get_element(built_string, visited_hash, config)
-			nested_hash << visited_hash
-			built_string=""
-		else
-			built_string+='.'
-		end
-		i+=1
-	end	
-	return built_string,nested_hash
+result = recursive_search(path,config)
+if result.nil?
+	puts "Could not find #{conf_path}"
+	exit 1
 end
-
-def substitute_hit(path,config)
-	built_string, nested_hash = build_the_guys(path,config)
-	nested_hash.reverse.each do |stack_entry|
-		stack_entry = stack_entry.select do | key, value |
-			key.start_with? '$'
-		end
-		stack_entry = stack_entry.select do | key, value |
-			clean_key = key.sub '$', ''
-			key_path = clean_key.split(".")	
-			reverse_path = path.reverse
-			reverse_key_path = key_path.reverse
-			reverse_path[0] == reverse_key_path[0]
-		end
-		#TODO: SORT TO PREFER LONGER EXACT MATCHES
-		if stack_entry.size == 1
-			return true, built_string.split(".")[0]
-		end
-	end
-	return false, nil
-end
-
-def direct_hit(path,config)
-	built_string,nested_hash = build_the_guys(path,config)
-	if built_string == ""
-		return true, nested_hash.last
-	end
-	return false, nil
-end
-
-def wildcard_hit(path,config)
-	built_string, nested_hash = build_the_guys(path,config)
-	nested_hash.reverse.each do |stack_entry|
-		stack_entry = stack_entry.select do | key, value |
-			key.start_with? '*.'
-		end
-		stack_entry = stack_entry.select do | key, value |
-			clean_key = key.sub '*.', ''
-			key_path = clean_key.split(".")	
-			reverse_path = path.reverse
-			reverse_key_path = key_path.reverse
-			reverse_path[0] == reverse_key_path[0]
-		end
-		#TODO: SORT TO PREFER LONGER EXACT MATCHES
-		if stack_entry.size == 1
-			return true, stack_entry.first[1]
-		end
-	end
-	return false, nil
-end
-
-def ends_with(path,config)
-	built_string, nested_hash = build_the_guys(path,config)
-	#We know that built string won't be a match...
-	nested_hash.reverse.each do |stack_entry|
-		stack_entry = stack_entry.select do | key, value |
-			key.start_with? '**'
-		end
-		stack_entry = stack_entry.select do | key, value |
-			clean_key = key.sub '**.', ''
-			key_path = clean_key.split(".")	
-			reverse_path = path.reverse
-			reverse_key_path = key_path.reverse
-			#TODO: Make this much much smarter
-			reverse_path[0] == reverse_key_path[0]
-		end
-		#TODO: SORT TO PREFER LONGER EXACT MATCHES
-		if stack_entry.size == 1
-			return true, stack_entry.first[1]
-		end
-	end
-	return false, nil
-end
-
-attempts = [
-	[:direct_hit, Proc.new{ |p,c| direct_hit(p,c)}],
-	[:substitute_hit, Proc.new{ |p,c| substitute_hit(p,c)}],
-	[:wildcard_hit, Proc.new{ |p,c| wildcard_hit(p,c)}],
-	[:ends_with, Proc.new{ |p,c| ends_with(p,c)}],
-]
-
-attempts.each do |data|
-	name,attempt = data
-	success, value = attempt.call(path,config)
-	if success
-		puts value
-		exit 0;
-	end
-end
-
-puts "Could not find key"
-exit 1
+puts result
