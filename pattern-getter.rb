@@ -31,9 +31,37 @@ def determine_matches(local_path,config)
 	return matches
 end
 
+class PatternState
+	attr_accessor :path, :evaluated_path, :variables
+
+	def initialize()
+		@evaluated_path= []
+		@variables= {}
+	end
+end
+
+
 class Label
 	@variable
 	attr_accessor :variable
+
+	def consume(path)
+		both(path)[0]
+	end
+
+	def next(state)
+		output = PatternState.new
+		return output if state.path.nil?
+		rest, consumed = both(state.path)
+		return output if rest.nil?
+		output.path = rest
+		output.evaluated_path = state.evaluated_path.clone
+		output.evaluated_path << consumed
+		output.variables = state.variables.clone
+		output.variables[@variable]=consumed.join(".") if @variable
+		return output
+	end
+
 end
 
 class DeepWildcard < Label
@@ -42,10 +70,6 @@ class DeepWildcard < Label
 
 	def initialize(next_path)
 		@next_path= next_path
-	end
-
-	def consume(path)
-		both(path)[0]
 	end
 
 	def both(path)
@@ -67,10 +91,6 @@ class DirectHit < Label
 		@element= element
 	end
 
-	def consume(path)
-		both(path)[0]
-	end
-
 	def both(path)
 		return [path.drop(1),path.take(1)] if(path[0] == @element)	
 		#Let's be explicit about return nil, since we're using it as a poor man's option
@@ -89,10 +109,6 @@ class EnumHit < Label
 		@entries = entries
 	end
 
-	def consume(path)
-		both(path)[0]
-	end
-
 	def both(path)
 		return [path.drop(1),path.take(1)] if @entries.index(path[0])
 		#Let's be explicit about return nil, since we're using it as a poor man's option
@@ -105,10 +121,6 @@ class EnumHit < Label
 end
 
 class WildcardHit < Label
-	def consume(path)
-		both(path)[0]
-	end
-
 	def both(path)
 		return [path.drop(1),path.take(1)] if path[0]
 		#Let's be explicit about return nil, since we're using it as a poor man's option
@@ -125,10 +137,6 @@ class RegexHit < Label
 	attr_accessor :regex
 	def initialize(regex)
 		@regex = /#{Regexp.new(regex)}/
-	end
-
-	def consume(path)
-		both(path)[0]
 	end
 
 	def both(path)
@@ -173,13 +181,15 @@ end
 
 def match(key,path)
 	processors = parse_processors(key)
+	state = PatternState.new
+	state.path = path
 	processors.each do |processor|
-		path = processor.consume(path)
-		if(path.nil?)
+		state = processor.next(state)
+		if(state.path.nil?)
 			return false
 		end
 	end
-	return path.size == 0
+	return state.path.size == 0
 end
 
 data = [
@@ -280,14 +290,12 @@ def recursive_search(path,value)
 		unless next_value.instance_of? Hash
 			processors = parse_processors(hit_key)
 			local_path = path
-			variables = {}
+			state = PatternState.new
+			state.path= path
 			processors.each do |processor|
-				local_path,accum = processor.both(local_path)
-				variables[processor.variable] = accum.join(".") if processor.variable
-				#print "#{local_path},#{accum}\n"
+				state = processor.next(state)
 			end
-			#print "#{sub_path}, #{hit_key}, #{variables}\n"
-			variables.each do |var, var_val|
+			state.variables.each do |var, var_val|
 				next_value = next_value.gsub("${#{var}}",var_val)
 			end
 			return next_value 
