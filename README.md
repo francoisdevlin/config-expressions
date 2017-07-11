@@ -41,7 +41,7 @@ Let's use our command line tool to extract the actual values
     $ tool --file example1.json development.app1.db.user
     app1_user
 
-##Wildcard matching
+## Wildcard matching
 The first thing this demonstrates is that our tool can read vanilla JSON.  This is a very useful starting point, because it will allow us to import existing JSON configs directly.  
 
 However, there is a lot of repetition in this config.  For example, you can see that all three database are configured to use the same url.  
@@ -77,7 +77,7 @@ Let's query the app1 url to see the wildcard in action.
 
 You can see that the wildcard value is being used.
 
-##Specifying a convention
+## Specifying a convention
 You can see a convention in this example as well.  Each of the users is named after the db they are connecting to.  Let's extract that path into a variable, `app_name`, and substitute it in the returned value.  This is done by appending the variable to the path with a `$`. 
 
     {
