@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'json'
+require 'optparse'
 
 class String
 	def black; "\e[30m#{self}\e[0m" end
@@ -12,10 +13,26 @@ class String
 	def gray; "\e[37m#{self}\e[0m" end
 end
 
+
+config_file_path="conf.jsonw"
+opt_parser = OptionParser.new do |opts|
+      opts.banner = "Usage: example.rb [options]"
+
+      opts.separator ""
+      opts.separator "Specific options:"
+
+      # Mandatory argument.
+      opts.on("-f", "--file FILE",
+              "Reads json config from file, defaults to #{config_file_path}") do |conf_file|
+      	config_file_path = conf_file 
+      end
+end
+
+opt_parser.parse!(ARGV)
 conf_path = ARGV[0];
 
 path = conf_path.split('.')
-config_file = File.read("conf.jsonw")
+config_file = File.read(config_file_path)
 config = JSON.parse(config_file)
 
 def determine_matches(local_path,config)
