@@ -2,6 +2,7 @@
 	"**.username":"sa",
 	"**.password":"",
 	"**.db.driver":"oracle.jdbc.OracleDriver",
+	"localhost,pipeline.db.driver" : "org.h2.Driver",
 	"*": {
 		"payment.db.username" : "DDO_PAYMT_DBA_READ",
 		"account.db.username" : "DDO_ACCT_DBA_READ",
@@ -14,14 +15,9 @@
 	},
 	"localhost":{
 		"*$domain.db.domain":"${domain}",
-		"db.driver" : "org.h2.Driver",
 		"analyticsgateway.db.domain" : "analytics-gateway",
 		"idmap.db.domain" : "platform-integration",
 		"processorgateway.db.domain" : "processor-gateway"
-	},
-	"pipeline" : {
-		"db.driver" : "org.h2.Driver",
-		"*.db.url" : "jdbc:h2:/local/domains/h2/payments;AUTO_SERVER=TRUE;MODE=Oracle"
 	},
 	"ukdev" : {
 		"*.db.url" : "jdbc:oracle:thin:@//odu1-12-sl-uat.barcapint.com:3521/BCardNG.intranet.barcapint.com",
@@ -35,6 +31,7 @@
 	"dev02,dev03,qa03,cicluster.*.db.password" : "dev002a_",
 	"qa01,qa02,qa04.*.db.password" : "deb09_Qa7",
 
+	"pipeline.*.db.url" : "jdbc:h2:/local/domains/h2/payments;AUTO_SERVER=TRUE;MODE=Oracle" ,
 	"dev02.*.db.url" : "jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc",
 	"dev03.*.db.url" : "jdbc:oracle:thin:@dephcld.juniper.com:1521/deph3debtomcatsvc",
 	"qa01.*.db.url" : "jdbc:oracle:thin:@qodcld.juniper.com:1521/qdebtomcatsvc",
