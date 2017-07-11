@@ -1,3 +1,12 @@
+class PatternState
+	attr_accessor :path, :evaluated_path, :variables
+
+	def initialize()
+		@evaluated_path= []
+		@variables= {}
+	end
+end
+
 class Label
 	@variable
 	attr_accessor :variable

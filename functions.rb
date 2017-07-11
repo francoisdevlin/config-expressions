@@ -13,15 +13,6 @@ def determine_matches(local_path,config)
 	return matches
 end
 
-class PatternState
-	attr_accessor :path, :evaluated_path, :variables
-
-	def initialize()
-		@evaluated_path= []
-		@variables= {}
-	end
-end
-
 def get_label_info(key)
 	matches = key.scan(/(.*)\$(\w+)$/)
 	return key,nil if matches == []
