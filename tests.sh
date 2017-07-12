@@ -4,14 +4,15 @@ TEST_COMMAND="./pattern-getter.rb"
 
 OUTPUT_CODE=0;
 
+OUTPUT_MD_FILE=examples/README.md
+rm -f $OUTPUT_MD_FILE
+cat examples/header.md >> examples/README.md
 for EXAMPLE_DIR in $(find examples -type d -depth 1); do
 	echo $EXAMPLE_DIR
 	CONF_FILE=$EXAMPLE_DIR/conf.jsonw
 	PASSING_FILE=$EXAMPLE_DIR/passing-data.csv
-	OUTPUT_MD_FILE=$EXAMPLE_DIR/README.md
 	INPUT_MD_FILE=$EXAMPLE_DIR/input.md
-	rm -f $OUTPUT_MD_FILE
-	echo "# $(basename $EXAMPLE_DIR | sed -e 's/[-_]/ /g')" >> $OUTPUT_MD_FILE
+	echo "## $(basename $EXAMPLE_DIR | sed -e 's/[-_]/ /g')" >> $OUTPUT_MD_FILE
 	cat $INPUT_MD_FILE >> $OUTPUT_MD_FILE
 	echo -e "" >> $OUTPUT_MD_FILE
 	sed -e 's/^/    /' $CONF_FILE >> $OUTPUT_MD_FILE
@@ -36,6 +37,7 @@ for EXAMPLE_DIR in $(find examples -type d -depth 1); do
 		echo -e "    $ACTUAL_OUTPUT\n     " >> $OUTPUT_MD_FILE
 	done < <(sed -e 's/#.*//' $PASSING_FILE | grep '.')
 done
+cat examples/footer.md >> examples/README.md
 
 echo "There were $OUTPUT_CODE failing tests"
 if [ "$OUTPUT_CODE" != "0" ]; then

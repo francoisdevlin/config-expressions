@@ -142,4 +142,4 @@ A deep wildcard match is specified like this
 This will match anything ending with `.c`, such as `a.b.c`, `b.c`, or even `c`.  The pattern is greedy, so it will also match `a.b.c.c`
 
 # Testing the format
-The tests are centered around stdin & stdout, in order to ensure equivalence across multiple implementations.  You can see the values in the `test-data` directory
+The tests are centered around stdin & stdout, in order to ensure equivalence across multiple implementations.  You can see the values in the `examples` directory
