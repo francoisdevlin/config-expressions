@@ -17,25 +17,33 @@ for EXAMPLE_DIR in $(find examples -type d -depth 1); do
 	echo -e "\n" >> $OUTPUT_MD_FILE
 	sed -e 's/^/    /' $CONF_FILE >> $OUTPUT_MD_FILE
 	echo -e "\nThis will produce the following output\n" >> $OUTPUT_MD_FILE
-	while read -r INPUT EXPECTED_OUTPUT; do
-		ACTUAL_OUTPUT=$($TEST_COMMAND --file $CONF_FILE $INPUT)
-		ACTUAL_CODE=$?
-		RESULT="PASS"
-		if [ "$ACTUAL_CODE" != "0" ]; then
-			OUTPUT_CODE=$((OUTPUT_CODE+1));
-			RESULT="FAIL";
-		elif [ "$ACTUAL_OUTPUT" != "$EXPECTED_OUTPUT" ]; then
-			OUTPUT_CODE=$((OUTPUT_CODE+1));
-			RESULT="FAIL";
-		fi
-		if [ "$RESULT" == "PASS" ]; then
-			echo -e "\x1B[1;32m$RESULT\x1B[0m - Input: '$INPUT' Actual: '$ACTUAL_OUTPUT' Expected: '$EXPECTED_OUTPUT'"
+	#while read -r INPUT EXPECTED_OUTPUT; do
+	while read -r LINE; do
+		echo $LINE | grep '#' > /dev/null
+		CODE=$?
+		if [ "$CODE" == "0" ]; then
+			echo -e "\n$(echo $LINE | sed -e 's/#//')\n\n" >> $OUTPUT_MD_FILE
 		else
-			echo -e "\x1B[1;31m$RESULT\x1B[0m - Input: '$INPUT' Actual: '$ACTUAL_OUTPUT' Expected: '$EXPECTED_OUTPUT'"
+			read -r INPUT EXPECTED_OUTPUT <<< "$LINE"
+			ACTUAL_OUTPUT=$($TEST_COMMAND --file $CONF_FILE $INPUT)
+			ACTUAL_CODE=$?
+			RESULT="PASS"
+			if [ "$ACTUAL_CODE" != "0" ]; then
+				OUTPUT_CODE=$((OUTPUT_CODE+1));
+				RESULT="FAIL";
+			elif [ "$ACTUAL_OUTPUT" != "$EXPECTED_OUTPUT" ]; then
+				OUTPUT_CODE=$((OUTPUT_CODE+1));
+				RESULT="FAIL";
+			fi
+			if [ "$RESULT" == "PASS" ]; then
+				echo -e "\x1B[1;32m$RESULT\x1B[0m - Input: '$INPUT' Actual: '$ACTUAL_OUTPUT' Expected: '$EXPECTED_OUTPUT'"
+			else
+				echo -e "\x1B[1;31m$RESULT\x1B[0m - Input: '$INPUT' Actual: '$ACTUAL_OUTPUT' Expected: '$EXPECTED_OUTPUT'"
+			fi
+			echo "    $ $TEST_COMMAND $INPUT" >> $OUTPUT_MD_FILE
+			echo -e "    $ACTUAL_OUTPUT\n     " >> $OUTPUT_MD_FILE
 		fi
-		echo "    $ $TEST_COMMAND $INPUT" >> $OUTPUT_MD_FILE
-		echo -e "    $ACTUAL_OUTPUT\n     " >> $OUTPUT_MD_FILE
-	done < <(sed -e 's/#.*//' $PASSING_FILE | grep '.')
+	done < <(cat $PASSING_FILE | grep '.')
 done
 cat examples/footer.md >> examples/README.md
 
