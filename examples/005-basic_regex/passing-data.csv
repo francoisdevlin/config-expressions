@@ -1,0 +1,4 @@
+development.app1.db.user regex_app1_user
+development.app2.db.user regex_app2_user
+#Notice the built in anchors to the regex, so this value falls through to the wildcard pattern
+development.app10.db.user app10_user

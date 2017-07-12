@@ -1,0 +1,11 @@
+{
+	"development": {
+		"app1.db.password" : "secret_1",
+		"app2.db.password" : "secret_2",
+		"app3.db.password" : "secret_3",
+
+		"/app\\w/$app_name.db.user" : "regex_${app_name}_user",
+		"*$app_name.db.user" : "${app_name}_user",
+		"*.db.url" : "jdbc:h2:/sample/path"
+	}
+}

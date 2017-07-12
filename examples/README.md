@@ -152,7 +152,85 @@ This will produce the following output
     $ ./pattern-getter.rb development.app9.db.url
     'jdbc:h2:/sample/path'
      
-## 005 locality vs specificity
+## 005 basic regex
+The enum matcher is a valuable way to use a union type.  However, you must explicitly include every match you want to include.  Sometimes it is more useful to match a more general pattern, such as a regular expression.  This example shows a regex matcher at work.  The regex is specified in the pattern `/app\\w/$app_name.db.user`. Notice the following
+
+* The regex is specified with `/` delimters on each end.  
+* The exact value of the regex is being captured in the variable `app_name`
+* The regex is automatically anchored.
+* The regex has high precedence than a wildcard
+
+
+    {
+    	"development": {
+    		"app1.db.password" : "secret_1",
+    		"app2.db.password" : "secret_2",
+    		"app3.db.password" : "secret_3",
+    
+    		"/app\\w/$app_name.db.user" : "regex_${app_name}_user",
+    		"*$app_name.db.user" : "${app_name}_user",
+    		"*.db.url" : "jdbc:h2:/sample/path"
+    	}
+    }
+
+This will produce the following output
+
+    $ ./pattern-getter.rb development.app1.db.user
+    'regex_app1_user'
+     
+    $ ./pattern-getter.rb development.app2.db.user
+    'regex_app2_user'
+     
+
+Notice the built in anchors to the regex, so this value falls through to the wildcard pattern
+
+
+    $ ./pattern-getter.rb development.app10.db.user
+    'app10_user'
+     
+## 006 complete precedence
+This example shows the complete precedence of patterns of the same locality.  The order is
+
+1. Direct Match
+2. Enum Match
+3. Regex Match
+4. Wildcard Match
+5. Deep Wildcard Match
+
+
+
+    {
+    	"development": {
+    		"app1.db.user" : "user",
+    		"app1,app2$app_name.db.user" : "enum_${app_name}_user",
+    		"/app\\w/$app_name.db.user" : "regex_${app_name}_user",
+    		"*$app_name.db.user" : "wildcard_${app_name}_user",
+    		"**$app_name.user" : "deep_wildcard_${app_name}_user"
+    	}
+    }
+
+This will produce the following output
+
+    $ ./pattern-getter.rb development.app1.db.user
+    'user'
+     
+    $ ./pattern-getter.rb development.app2.db.user
+    'enum_app2_user'
+     
+    $ ./pattern-getter.rb development.app3.db.user
+    'regex_app3_user'
+     
+    $ ./pattern-getter.rb development.app10.db.user
+    'wildcard_app10_user'
+     
+
+Notice that the entire matched path is substituted
+
+
+    $ ./pattern-getter.rb development.other_app.server.user
+    'deep_wildcard_other_app.server_user'
+     
+## 007 locality vs specificity
 Locality is established by creating a new dictionary object
 
 This example shows local instructions winning oevr global ones.  Observe development.app1.db.url.  Even thought the global rule is more specific, the specification of a local wildcard rule overrides the global one.  This is because the most local rules win a conflict. 
@@ -186,7 +264,7 @@ This will produce the following output
     $ ./pattern-getter.rb development.app2.db.url
     'jdbc:h2:/other/path'
      
-## 006 hello
+## 008 hello
 
 
     {

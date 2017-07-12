@@ -1,0 +1,6 @@
+development.app1.db.user user
+development.app2.db.user enum_app2_user
+development.app3.db.user regex_app3_user
+development.app10.db.user wildcard_app10_user
+#Notice that the entire matched path is substituted
+development.other_app.server.user deep_wildcard_other_app.server_user

@@ -1,0 +1,9 @@
+{
+	"development": {
+		"app1.db.user" : "user",
+		"app1,app2$app_name.db.user" : "enum_${app_name}_user",
+		"/app\\w/$app_name.db.user" : "regex_${app_name}_user",
+		"*$app_name.db.user" : "wildcard_${app_name}_user",
+		"**$app_name.user" : "deep_wildcard_${app_name}_user"
+	}
+}
