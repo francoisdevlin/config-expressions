@@ -14,9 +14,9 @@ for EXAMPLE_DIR in $(find examples -type d -depth 1); do
 	INPUT_MD_FILE=$EXAMPLE_DIR/input.md
 	echo "## $(basename $EXAMPLE_DIR | sed -e 's/[-_]/ /g')" >> $OUTPUT_MD_FILE
 	cat $INPUT_MD_FILE >> $OUTPUT_MD_FILE
-	echo -e "" >> $OUTPUT_MD_FILE
+	echo -e "\n" >> $OUTPUT_MD_FILE
 	sed -e 's/^/    /' $CONF_FILE >> $OUTPUT_MD_FILE
-	echo -e "This will produce the following output\n" >> $OUTPUT_MD_FILE
+	echo -e "\nThis will produce the following output\n" >> $OUTPUT_MD_FILE
 	while read -r INPUT EXPECTED_OUTPUT; do
 		ACTUAL_OUTPUT=$($TEST_COMMAND --file $CONF_FILE $INPUT)
 		ACTUAL_CODE=$?

@@ -1,5 +1,9 @@
-This is a collection of tests that are run, to ensure that the rules are being interpolated properly.  Each directory is one test suite.  There are the following in each directory
+# Learning More
+
+There are collection of directories that include the actual source for this document,and they act as a test suite for the tool.  Each directory will contain:
 
 * A config file, conf.jsonw
 * A set of expected keys, in passing-keys.csv
-* A human readable explaination of the test case, in README.md
+* A human readable explaination of the test case, in input.md
+
+You can play with these yourself, or add items to them.  Run the `tests.sh` command to regenerate this documentation.

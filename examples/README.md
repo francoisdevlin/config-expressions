@@ -1,10 +1,53 @@
-This is a collection of tests that are run, to ensure that the rules are being interpolated properly.  Each directory is one test suite.  There are the following in each directory
+This shows how to use the configuration notation, and what values will be returned.
 
-* A config file, conf.jsonw
-* A set of expected keys, in passing-keys.csv
-* A human readable explaination of the test case, in README.md
+# Available Patterns
+The following patterns are available in a label, with the high precedence matches towards the top
+
+1. An exact match
+1. An enum match
+1. A regex match
+1. A wildcard match
+1. A deep wildcard match
+
+## Exact Match
+An exact match is simply a label.  It looks like this
+
+    a.b.c
+
+## An Enum Match
+An enum match is delimited by commas.  It looks like this
+
+	a1,a2.b.c
+
+This will match `a1.b.c` and `a2.b.c`
+
+## A Regex Match
+A regex match is surrounded by slashes.  Using the `.` is NOT supported.  Instead, `\w` is your friend  
+
+	/a\w*/.b.c
+
+This will match `a.b.c`, `apple.b.c`, and `aardvark.b.c` 
+
+## Wildcard Match
+A wildcard match is specified like this
+
+	*.b.c
+
+This will match `a.b.c`, `b.b.c`, and any three element path that ends with `b.c`
+
+## Deep Wildcard Match
+A deep wildcard match is specified like this
+
+	**.c
+
+This will match anything ending with `.c`, such as `a.b.c`, `b.c`, or even `c`.  The pattern is greedy, so it will also match `a.b.c.c`
+
+
+# Examples
+Below are several examples on how to use these patterns.
 ## 001 vanilla json
 This example shows that the tool can access configuration stored as vanilla json
+
 
     {
     	"development": {
@@ -23,6 +66,7 @@ This example shows that the tool can access configuration stored as vanilla json
     		"app3.db.url" : "jdbc:h2:/sample/path"
     	}
     }
+
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.user
@@ -33,6 +77,7 @@ This will produce the following output
      
 ## 002 basic wildcard
 This example show a basic wildcard match.  It is possible to use a wildcard to match both specified paths, such as app1.db, as well as dynamic paths, such as app9.db.url.  It also shows what happens in the case of a collision.  Notice that app2.db.url returns a different value, `jdbc:h2:/other/path`
+
 
     {
     	"development": {
@@ -49,6 +94,7 @@ This example show a basic wildcard match.  It is possible to use a wildcard to m
     		"*.db.url" : "jdbc:h2:/sample/path"
     	}
     }
+
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.user
@@ -69,6 +115,7 @@ This will produce the following output
 ## 003 basic substitution
 This example shows to to use basic variable subsitution with a wildcard.  It matches keys that are static, such as app1.db, as well as keys that are dynamic, such as app9.
 
+
     {
     	"development": {
     		"app1.db.password" : "secret_1",
@@ -79,6 +126,7 @@ This example shows to to use basic variable subsitution with a wildcard.  It mat
     		"*.db.url" : "jdbc:h2:/sample/path"
     	}
     }
+
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.user
@@ -106,6 +154,7 @@ This example shows to to use an enum, with variable substition.  You'll notice t
 * The exact value of the enumeration is being captured in the variable `app_name`
 * The enum has high precedence than a wildcard
 
+
     {
     	"development": {
     		"app1.db.password" : "secret_1",
@@ -117,6 +166,7 @@ This example shows to to use an enum, with variable substition.  You'll notice t
     		"*.db.url" : "jdbc:h2:/sample/path"
     	}
     }
+
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.user
@@ -144,6 +194,7 @@ This example shows local instructions winning oevr global ones.  Observe develop
 
 You can see that more specific rules still win if they have the same locality, in development.app2.db.url
 
+
     {
     	"development.app1.db.url" : "jdbc:h2:/not/used",
     
@@ -161,6 +212,7 @@ You can see that more specific rules still win if they have the same locality, i
     		"*.db.url" : "jdbc:h2:/sample/path"
     	}
     }
+
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.url
@@ -170,6 +222,7 @@ This will produce the following output
     jdbc:h2:/other/path
      
 ## 006 hello
+
 
     {
     	"**.username":"sa",
@@ -213,6 +266,7 @@ This will produce the following output
     	"qa04.*.db.url" : "jdbc:oracle:thin:@172.18.223.135:1521/DEVOPS01",
     	"cicluster.*.db.url" : "jdbc:oracle:thin:@dephcld.juniper.com:1521/deph3debtomcatsvc"
     }
+
 This will produce the following output
 
     $ ./pattern-getter.rb localhost.db.driver
@@ -242,8 +296,12 @@ This will produce the following output
     $ ./pattern-getter.rb dev02.sample.db.url
     jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc
      
-This is a collection of tests that are run, to ensure that the rules are being interpolated properly.  Each directory is one test suite.  There are the following in each directory
+# Learning More
+
+There are collection of directories that include the actual source for this document,and they act as a test suite for the tool.  Each directory will contain:
 
 * A config file, conf.jsonw
 * A set of expected keys, in passing-keys.csv
-* A human readable explaination of the test case, in README.md
+* A human readable explaination of the test case, in input.md
+
+You can play with these yourself, or add items to them.  Run the `tests.sh` command to regenerate this documentation.
