@@ -94,22 +94,18 @@ This example shows to to use basic variable subsitution with a wildcard.  It mat
 
 This will produce the following output
 
+
+Notice that the matched part of the path is substituted into the returned value
+
+
     $ ./pattern-getter.rb development.app1.db.user
     'app1_user'
      
-    $ ./pattern-getter.rb development.app2.db.user
-    'app2_user'
-     
+
+The url does not have any substitution, so no changes are made
+
+
     $ ./pattern-getter.rb development.app1.db.url
-    'jdbc:h2:/sample/path'
-     
-    $ ./pattern-getter.rb development.app2.db.url
-    'jdbc:h2:/sample/path'
-     
-    $ ./pattern-getter.rb development.app9.db.user
-    'app9_user'
-     
-    $ ./pattern-getter.rb development.app9.db.url
     'jdbc:h2:/sample/path'
      
 ## 004 basic enum
@@ -140,17 +136,12 @@ This will produce the following output
     $ ./pattern-getter.rb development.app2.db.user
     'enum_app2_user'
      
-    $ ./pattern-getter.rb development.app1.db.url
-    'jdbc:h2:/sample/path'
-     
-    $ ./pattern-getter.rb development.app2.db.url
-    'jdbc:h2:/sample/path'
-     
+
+Notice that the wildcard pattern is matched after the enum is exhausted
+
+
     $ ./pattern-getter.rb development.app9.db.user
     'app9_user'
-     
-    $ ./pattern-getter.rb development.app9.db.url
-    'jdbc:h2:/sample/path'
      
 ## 005 basic regex
 The enum matcher is a valuable way to use a union type.  However, you must explicitly include every match you want to include.  Sometimes it is more useful to match a more general pattern, such as a regular expression.  This example shows a regex matcher at work.  The regex is specified in the pattern `/app\\w/$app_name.db.user`. Notice the following
@@ -240,18 +231,11 @@ You can see that more specific rules still win if they have the same locality, i
 
     {
     	"development.app1.db.url" : "jdbc:h2:/not/used",
+    	"development.app1.service.url" : "jdbc:h2:/used",
+    	"development.app2.db.url" : "jdbc:h2:/also/not/used",
     
     	"development": {
-    		"app1.db.user" : "app1_user",
-    		"app1.db.password" : "secret_1",
-    
-    		"app2.db.user" : "app2_user",
-    		"app2.db.password" : "secret_2",
     		"app2.db.url" : "jdbc:h2:/other/path",
-    
-    		"app3.db.user" : "app3_user",
-    		"app3.db.password" : "secret_3",
-    
     		"*.db.url" : "jdbc:h2:/sample/path"
     	}
     }
@@ -263,6 +247,13 @@ This will produce the following output
      
     $ ./pattern-getter.rb development.app2.db.url
     'jdbc:h2:/other/path'
+     
+
+Noting matches locally inside the `development` dictionary, so the engine falls back on the global value
+
+
+    $ ./pattern-getter.rb development.app1.service.url
+    'jdbc:h2:/used'
      
 ## 008 hello
 

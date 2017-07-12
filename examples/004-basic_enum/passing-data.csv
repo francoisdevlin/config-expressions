@@ -1,6 +1,4 @@
 development.app1.db.user enum_app1_user
 development.app2.db.user enum_app2_user
-development.app1.db.url jdbc:h2:/sample/path
-development.app2.db.url jdbc:h2:/sample/path
+#Notice that the wildcard pattern is matched after the enum is exhausted
 development.app9.db.user app9_user
-development.app9.db.url jdbc:h2:/sample/path

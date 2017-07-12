@@ -1,6 +1,4 @@
+#Notice that the matched part of the path is substituted into the returned value
 development.app1.db.user app1_user
-development.app2.db.user app2_user
+#The url does not have any substitution, so no changes are made
 development.app1.db.url jdbc:h2:/sample/path
-development.app2.db.url jdbc:h2:/sample/path
-development.app9.db.user app9_user
-development.app9.db.url jdbc:h2:/sample/path
