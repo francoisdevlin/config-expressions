@@ -4,14 +4,14 @@ TEST_COMMAND="./pattern-getter.rb"
 
 OUTPUT_CODE=0;
 
-for TEST_DIR in $(find test-data -type d -depth 1); do
-	echo $TEST_DIR
-	CONF_FILE=$TEST_DIR/conf.jsonw
-	PASSING_FILE=$TEST_DIR/passing-data.csv
-	OUTPUT_MD_FILE=$TEST_DIR/README.md
-	INPUT_MD_FILE=$TEST_DIR/input.md
+for EXAMPLE_DIR in $(find examples -type d -depth 1); do
+	echo $EXAMPLE_DIR
+	CONF_FILE=$EXAMPLE_DIR/conf.jsonw
+	PASSING_FILE=$EXAMPLE_DIR/passing-data.csv
+	OUTPUT_MD_FILE=$EXAMPLE_DIR/README.md
+	INPUT_MD_FILE=$EXAMPLE_DIR/input.md
 	rm -f $OUTPUT_MD_FILE
-	echo "# $(basename $TEST_DIR | sed -e 's/[-_]/ /g')" >> $OUTPUT_MD_FILE
+	echo "# $(basename $EXAMPLE_DIR | sed -e 's/[-_]/ /g')" >> $OUTPUT_MD_FILE
 	cat $INPUT_MD_FILE >> $OUTPUT_MD_FILE
 	echo -e "" >> $OUTPUT_MD_FILE
 	sed -e 's/^/    /' $CONF_FILE >> $OUTPUT_MD_FILE
