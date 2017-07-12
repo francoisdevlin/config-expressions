@@ -102,7 +102,7 @@ class RegexHit < Label
 	@regex
 	attr_accessor :regex
 	def initialize(regex)
-		@regex = /#{Regexp.new(regex)}/
+		@regex = /^#{Regexp.new(regex)}$/
 	end
 
 	def both(path)
