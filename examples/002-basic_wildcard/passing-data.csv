@@ -1,5 +1,9 @@
 development.app1.db.user app1_user
 development.app2.db.user app2_user
 development.app1.db.url jdbc:h2:/sample/path
+
+#You can see that `app2.db.url` matches the more specific input
 development.app2.db.url jdbc:h2:/other/path
+
+#We can also get a value for entries that aren't specified explicitly, such as `app9.db.url`
 development.app9.db.url jdbc:h2:/sample/path

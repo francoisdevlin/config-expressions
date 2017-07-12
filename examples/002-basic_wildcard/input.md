@@ -1,1 +1,1 @@
-This example show a basic wildcard match.  It is possible to use a wildcard to match both specified paths, such as app1.db, as well as dynamic paths, such as app9.db.url.  It also shows what happens in the case of a collision.  Notice that app2.db.url returns a different value, `jdbc:h2:/other/path`
+Let's us a wildcard pattern to exact out some of the common functionality.  You'll notice the app1.db.url and app3.db.url are all the same.  We can match all of them with a widcard pattern, `*.db.url`.  This will let us remove a couple of lines from the config

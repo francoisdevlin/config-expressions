@@ -1,52 +1,9 @@
-This shows how to use the configuration notation, and what values will be returned.
+The goal of this document is to show both the _why_ as much as the _how_ to use this pattern matching library.  It starts by walking you through an example of a static, vanilla JSON file, and adds more an more features to add more an more power.  At the end is a reference section on each pattern
 
-# Available Patterns
-The following patterns are available in a label, with the high precedence matches towards the top
-
-1. An exact match
-1. An enum match
-1. A regex match
-1. A wildcard match
-1. A deep wildcard match
-
-## Exact Match
-An exact match is simply a label.  It looks like this
-
-    a.b.c
-
-## An Enum Match
-An enum match is delimited by commas.  It looks like this
-
-	a1,a2.b.c
-
-This will match `a1.b.c` and `a2.b.c`
-
-## A Regex Match
-A regex match is surrounded by slashes.  Using the `.` is NOT supported.  Instead, `\w` is your friend  
-
-	/a\w*/.b.c
-
-This will match `a.b.c`, `apple.b.c`, and `aardvark.b.c` 
-
-## Wildcard Match
-A wildcard match is specified like this
-
-	*.b.c
-
-This will match `a.b.c`, `b.b.c`, and any three element path that ends with `b.c`
-
-## Deep Wildcard Match
-A deep wildcard match is specified like this
-
-	**.c
-
-This will match anything ending with `.c`, such as `a.b.c`, `b.c`, or even `c`.  The pattern is greedy, so it will also match `a.b.c.c`
-
-
-# Examples
-Below are several examples on how to use these patterns.
+# Learning by Example
+Let's start with a very basi example, using vanilla JSON
 ## 001 vanilla json
-This example shows that the tool can access configuration stored as vanilla json
+Vanillia JSON is a configuration format we are all used to using.  There is a lot of pre-existing configuration written as vanilla JSON, so reaing it directly made sense as a starting point for the tool.  It is where you will start when trying to abstract out patterns from pre-existing files
 
 
     {
@@ -76,7 +33,7 @@ This will produce the following output
     app2_user
      
 ## 002 basic wildcard
-This example show a basic wildcard match.  It is possible to use a wildcard to match both specified paths, such as app1.db, as well as dynamic paths, such as app9.db.url.  It also shows what happens in the case of a collision.  Notice that app2.db.url returns a different value, `jdbc:h2:/other/path`
+Let's us a wildcard pattern to exact out some of the common functionality.  You'll notice the app1.db.url and app3.db.url are all the same.  We can match all of them with a widcard pattern, `*.db.url`.  This will let us remove a couple of lines from the config
 
 
     {
@@ -106,9 +63,17 @@ This will produce the following output
     $ ./pattern-getter.rb development.app1.db.url
     jdbc:h2:/sample/path
      
+
+You can see that `app2.db.url` matches the more specific input
+
+
     $ ./pattern-getter.rb development.app2.db.url
     jdbc:h2:/other/path
      
+
+We can also get a value for entries that aren't specified explicitly, such as `app9.db.url`
+
+
     $ ./pattern-getter.rb development.app9.db.url
     jdbc:h2:/sample/path
      
@@ -269,6 +234,10 @@ This will produce the following output
 
 This will produce the following output
 
+
+Hello
+
+
     $ ./pattern-getter.rb localhost.db.driver
     org.h2.Driver
      
@@ -296,6 +265,48 @@ This will produce the following output
     $ ./pattern-getter.rb dev02.sample.db.url
     jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc
      
+# Patterns Reference
+The following patterns are available in a label, with the high precedence matches towards the top
+
+1. An exact match
+1. An enum match
+1. A regex match
+1. A wildcard match
+1. A deep wildcard match
+
+## Exact Match
+An exact match is simply a label.  It looks like this
+
+    a.b.c
+
+## An Enum Match
+An enum match is delimited by commas.  It looks like this
+
+	a1,a2.b.c
+
+This will match `a1.b.c` and `a2.b.c`
+
+## A Regex Match
+A regex match is surrounded by slashes.  Using the `.` is NOT supported.  Instead, `\w` is your friend  
+
+	/a\w*/.b.c
+
+This will match `a.b.c`, `apple.b.c`, and `aardvark.b.c` 
+
+## Wildcard Match
+A wildcard match is specified like this
+
+	*.b.c
+
+This will match `a.b.c`, `b.b.c`, and any three element path that ends with `b.c`
+
+## Deep Wildcard Match
+A deep wildcard match is specified like this
+
+	**.c
+
+This will match anything ending with `.c`, such as `a.b.c`, `b.c`, or even `c`.  The pattern is greedy, so it will also match `a.b.c.c`
+
 # Learning More
 
 There are collection of directories that include the actual source for this document,and they act as a test suite for the tool.  Each directory will contain:

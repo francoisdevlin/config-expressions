@@ -1,1 +1,1 @@
-This example shows that the tool can access configuration stored as vanilla json
+Vanillia JSON is a configuration format we are all used to using.  There is a lot of pre-existing configuration written as vanilla JSON, so reaing it directly made sense as a starting point for the tool.  It is where you will start when trying to abstract out patterns from pre-existing files
