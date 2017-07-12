@@ -63,16 +63,12 @@ This will produce the following output
     $ ./pattern-getter.rb development.app1.db.url
     'jdbc:h2:/sample/path'
      
-
 You can see that `app2.db.url` matches the more specific input
-
 
     $ ./pattern-getter.rb development.app2.db.url
     'jdbc:h2:/other/path'
      
-
 We can also get a value for entries that aren't specified explicitly, such as `app9.db.url`
-
 
     $ ./pattern-getter.rb development.app9.db.url
     'jdbc:h2:/sample/path'
@@ -94,16 +90,12 @@ This example shows to to use basic variable subsitution with a wildcard.  It mat
 
 This will produce the following output
 
-
 Notice that the matched part of the path is substituted into the returned value
-
 
     $ ./pattern-getter.rb development.app1.db.user
     'app1_user'
      
-
 The url does not have any substitution, so no changes are made
-
 
     $ ./pattern-getter.rb development.app1.db.url
     'jdbc:h2:/sample/path'
@@ -136,9 +128,7 @@ This will produce the following output
     $ ./pattern-getter.rb development.app2.db.user
     'enum_app2_user'
      
-
 Notice that the wildcard pattern is matched after the enum is exhausted
-
 
     $ ./pattern-getter.rb development.app9.db.user
     'app9_user'
@@ -172,9 +162,7 @@ This will produce the following output
     $ ./pattern-getter.rb development.app2.db.user
     'regex_app2_user'
      
-
 Notice the built in anchors to the regex, so this value falls through to the wildcard pattern
-
 
     $ ./pattern-getter.rb development.app10.db.user
     'app10_user'
@@ -214,9 +202,7 @@ This will produce the following output
     $ ./pattern-getter.rb development.app10.db.user
     'wildcard_app10_user'
      
-
 Notice that the entire matched path is substituted
-
 
     $ ./pattern-getter.rb development.other_app.server.user
     'deep_wildcard_other_app.server_user'
@@ -248,14 +234,18 @@ This will produce the following output
     $ ./pattern-getter.rb development.app2.db.url
     'jdbc:h2:/other/path'
      
-
 Noting matches locally inside the `development` dictionary, so the engine falls back on the global value
-
 
     $ ./pattern-getter.rb development.app1.service.url
     'jdbc:h2:/used'
      
-## 008 hello
+## 008 db connections
+This is an example from real life.  The original file was approximately 360 lines of vanilla JSON.  This replacement version comes in at about 40 lines.  An order of magnitude improvment.  Not only is this a smaller file, but the real gains come when extending your system
+
+* Adding new environments is a breeze, it will only require adding a top level url
+* Adding a new database will usually require adding a user entry to the `*` locality
+
+This drastically cuts down on the amount of busywork that is required for configuration
 
 
     {
@@ -303,10 +293,6 @@ Noting matches locally inside the `development` dictionary, so the engine falls 
 
 This will produce the following output
 
-
-Hello
-
-
     $ ./pattern-getter.rb localhost.db.driver
     'org.h2.Driver'
      
@@ -334,6 +320,18 @@ Hello
     $ ./pattern-getter.rb dev02.sample.db.url
     'jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc'
      
+### Further optimization
+
+It is possible to optimize this event further with a small change to process.  For example, if we adopt a convention that every db user must be named after the application, we can replace the `*` dictionary with one entry
+
+
+
+	"*.*$app_name.db.username" : "DDO_${app_name}_DBA_READ"
+
+
+
+This will also remove the need to even maintain a list of usernames in _configuration_, as our pattern file will provide a _convention_ instead.
+
 # Patterns Reference
 The following patterns are available in a label, with the high precedence matches towards the top
 

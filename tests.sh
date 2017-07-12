@@ -21,7 +21,7 @@ for EXAMPLE_DIR in $(find examples -type d -depth 1); do
 		echo $LINE | grep '#' > /dev/null
 		CODE=$?
 		if [ "$CODE" == "0" ]; then
-			echo -e "\n$(echo $LINE | sed -e 's/#//')\n\n" >> $OUTPUT_MD_FILE
+			echo -e "$(echo -e "$LINE" | sed -e 's/#//')\n" >> $OUTPUT_MD_FILE
 		else
 			read -r INPUT EXPECTED_OUTPUT <<< "$LINE"
 			ACTUAL_OUTPUT=$($TEST_COMMAND --file $CONF_FILE $INPUT)

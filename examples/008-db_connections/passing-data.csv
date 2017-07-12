@@ -1,0 +1,18 @@
+localhost.db.driver org.h2.Driver
+localhost.sample.db.domain sample
+
+dev02.sample.db.password dev002a_
+dev02.sample.db.username sa
+dev02.payment.db.username DDO_PAYMT_DBA_READ
+localhost.sample.db.username sa
+localhost.sample.db.password
+
+qa01.sample.db.password deb09_Qa7
+
+dev02.sample.db.url jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc
+#### Further optimization
+#It is possible to optimize this event further with a small change to process.  For example, if we adopt a convention that every db user must be named after the application, we can replace the `*` dictionary with one entry
+#
+#	"*.*$app_name.db.username" : "DDO_${app_name}_DBA_READ"
+#
+#This will also remove the need to even maintain a list of usernames in _configuration_, as our pattern file will provide a _convention_ instead.
