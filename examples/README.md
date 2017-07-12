@@ -27,10 +27,10 @@ Vanillia JSON is a configuration format we are all used to using.  There is a lo
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.user
-    app1_user
+    'app1_user'
      
     $ ./pattern-getter.rb development.app2.db.user
-    app2_user
+    'app2_user'
      
 ## 002 basic wildcard
 Let's us a wildcard pattern to exact out some of the common functionality.  You'll notice the app1.db.url and app3.db.url are all the same.  We can match all of them with a widcard pattern, `*.db.url`.  This will let us remove a couple of lines from the config
@@ -55,27 +55,27 @@ Let's us a wildcard pattern to exact out some of the common functionality.  You'
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.user
-    app1_user
+    'app1_user'
      
     $ ./pattern-getter.rb development.app2.db.user
-    app2_user
+    'app2_user'
      
     $ ./pattern-getter.rb development.app1.db.url
-    jdbc:h2:/sample/path
+    'jdbc:h2:/sample/path'
      
 
 You can see that `app2.db.url` matches the more specific input
 
 
     $ ./pattern-getter.rb development.app2.db.url
-    jdbc:h2:/other/path
+    'jdbc:h2:/other/path'
      
 
 We can also get a value for entries that aren't specified explicitly, such as `app9.db.url`
 
 
     $ ./pattern-getter.rb development.app9.db.url
-    jdbc:h2:/sample/path
+    'jdbc:h2:/sample/path'
      
 ## 003 basic substitution
 This example shows to to use basic variable subsitution with a wildcard.  It matches keys that are static, such as app1.db, as well as keys that are dynamic, such as app9.
@@ -95,22 +95,22 @@ This example shows to to use basic variable subsitution with a wildcard.  It mat
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.user
-    app1_user
+    'app1_user'
      
     $ ./pattern-getter.rb development.app2.db.user
-    app2_user
+    'app2_user'
      
     $ ./pattern-getter.rb development.app1.db.url
-    jdbc:h2:/sample/path
+    'jdbc:h2:/sample/path'
      
     $ ./pattern-getter.rb development.app2.db.url
-    jdbc:h2:/sample/path
+    'jdbc:h2:/sample/path'
      
     $ ./pattern-getter.rb development.app9.db.user
-    app9_user
+    'app9_user'
      
     $ ./pattern-getter.rb development.app9.db.url
-    jdbc:h2:/sample/path
+    'jdbc:h2:/sample/path'
      
 ## 004 basic enum
 This example shows to to use an enum, with variable substition.  You'll notice the following:
@@ -135,22 +135,22 @@ This example shows to to use an enum, with variable substition.  You'll notice t
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.user
-    enum_app1_user
+    'enum_app1_user'
      
     $ ./pattern-getter.rb development.app2.db.user
-    enum_app2_user
+    'enum_app2_user'
      
     $ ./pattern-getter.rb development.app1.db.url
-    jdbc:h2:/sample/path
+    'jdbc:h2:/sample/path'
      
     $ ./pattern-getter.rb development.app2.db.url
-    jdbc:h2:/sample/path
+    'jdbc:h2:/sample/path'
      
     $ ./pattern-getter.rb development.app9.db.user
-    app9_user
+    'app9_user'
      
     $ ./pattern-getter.rb development.app9.db.url
-    jdbc:h2:/sample/path
+    'jdbc:h2:/sample/path'
      
 ## 005 locality vs specificity
 Locality is established by creating a new dictionary object
@@ -181,10 +181,10 @@ You can see that more specific rules still win if they have the same locality, i
 This will produce the following output
 
     $ ./pattern-getter.rb development.app1.db.url
-    jdbc:h2:/sample/path
+    'jdbc:h2:/sample/path'
      
     $ ./pattern-getter.rb development.app2.db.url
-    jdbc:h2:/other/path
+    'jdbc:h2:/other/path'
      
 ## 006 hello
 
@@ -239,31 +239,31 @@ Hello
 
 
     $ ./pattern-getter.rb localhost.db.driver
-    org.h2.Driver
+    'org.h2.Driver'
      
     $ ./pattern-getter.rb localhost.sample.db.domain
-    sample
+    'sample'
      
     $ ./pattern-getter.rb dev02.sample.db.password
-    dev002a_
+    'dev002a_'
      
     $ ./pattern-getter.rb dev02.sample.db.username
-    sa
+    'sa'
      
     $ ./pattern-getter.rb dev02.payment.db.username
-    DDO_PAYMT_DBA_READ
+    'DDO_PAYMT_DBA_READ'
      
     $ ./pattern-getter.rb localhost.sample.db.username
-    sa
+    'sa'
      
     $ ./pattern-getter.rb localhost.sample.db.password
-    
+    ''
      
     $ ./pattern-getter.rb qa01.sample.db.password
-    deb09_Qa7
+    'deb09_Qa7'
      
     $ ./pattern-getter.rb dev02.sample.db.url
-    jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc
+    'jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc'
      
 # Patterns Reference
 The following patterns are available in a label, with the high precedence matches towards the top

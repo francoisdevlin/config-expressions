@@ -17,7 +17,6 @@ for EXAMPLE_DIR in $(find examples -type d -depth 1); do
 	echo -e "\n" >> $OUTPUT_MD_FILE
 	sed -e 's/^/    /' $CONF_FILE >> $OUTPUT_MD_FILE
 	echo -e "\nThis will produce the following output\n" >> $OUTPUT_MD_FILE
-	#while read -r INPUT EXPECTED_OUTPUT; do
 	while read -r LINE; do
 		echo $LINE | grep '#' > /dev/null
 		CODE=$?
@@ -41,7 +40,7 @@ for EXAMPLE_DIR in $(find examples -type d -depth 1); do
 				echo -e "\x1B[1;31m$RESULT\x1B[0m - Input: '$INPUT' Actual: '$ACTUAL_OUTPUT' Expected: '$EXPECTED_OUTPUT'"
 			fi
 			echo "    $ $TEST_COMMAND $INPUT" >> $OUTPUT_MD_FILE
-			echo -e "    $ACTUAL_OUTPUT\n     " >> $OUTPUT_MD_FILE
+			echo -e "    '$ACTUAL_OUTPUT'\n     " >> $OUTPUT_MD_FILE
 		fi
 	done < <(cat $PASSING_FILE | grep '.')
 done
