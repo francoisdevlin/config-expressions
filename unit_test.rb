@@ -15,29 +15,31 @@ end
 
 
 data = [
-	["test.a","test.a",true],
-	["test.a,b","test.a",true],
-	["test.a,b","test.b",true],
-	["test.a,b","test.c",false],
-	["test./[a-z]/","test.a",true],
-	["test./[a-z]+/","test.a",true],
-	["test./[a-z]/","test.A",false],
-	["*.a","test.a",true],
-	["*.b","test.a",false],
-	["no-key","test.a",false],
-	["**.a","test.b",false],
-	["**.a","test.a",true],
-	["**.a.b.c","test.a.b.c",true],
-	["a.**.a","a.test.a",true],
-	["a.**.a","a.test.1.a",true],
-	["a.**.a","a.test.1.2.a",true],
-	["a.**.a","a.a",true],
-	["a.**.a","a.test.a.test.a",true],
-	["a.**.a","a.test.a.b",false],
-	["a.**.a","b.test.a",false],
-	["a.**.a","test.a",false],
-	["a.**.a","test.a.a",false],
-	["**.other","a",false],
+	["test","test.a","incomplete"],
+	["g","g.a","incomplete"],
+	["test.a","test.a","complete"],
+	["test.a,b","test.a","complete"],
+	["test.a,b","test.b","complete"],
+	["test.a,b","test.c","missing"],
+	["test./[a-z]/","test.a","complete"],
+	["test./[a-z]+/","test.a","complete"],
+	["test./[a-z]/","test.A","missing"],
+	["*.a","test.a","complete"],
+	["*.b","test.a","missing"],
+	["no-key","test.a","missing"],
+	["**.a","test.b","missing"],
+	["**.a","test.a","complete"],
+	["**.a.b.c","test.a.b.c","complete"],
+	["a.**.a","a.test.a","complete"],
+	["a.**.a","a.test.1.a","complete"],
+	["a.**.a","a.test.1.2.a","complete"],
+	["a.**.a","a.a","complete"],
+	["a.**.a","a.test.a.test.a","complete"],
+	["a.**.a","a.test.a.b","incomplete"],
+	["a.**.a","b.test.a","missing"],
+	["a.**.a","test.a","missing"],
+	["a.**.a","test.a.a","missing"],
+	["**.other","a","missing"],
 ]
 
 data.each do |entry| 
@@ -45,7 +47,7 @@ data.each do |entry|
 	test_path = path_text.split(".")
 	actual = match(key,test_path)
 	output =  "'#{key}', '#{path_text}', Expected: '#{expected}' Actual:'#{actual}'  \n"
-	output = actual == expected ? "PASS ".green + output : "FAIL ".red + output
+	output = actual.to_s == expected ? "PASS ".green + output : "FAIL ".red + output
 	print output
 end
 
@@ -66,3 +68,48 @@ sort_examples.each do |entry|
 	output = sorted == entry ? "PASS ".green + output : "FAIL ".red + output
 	print output
 end
+
+conf_dict = {
+	"a" => "value_a",
+	"b" => "value_b",
+	"c,d$enum" => "enum_${enum}",
+	"e.*$app.user" => "e_${app}_user",
+	"f" => {
+		"a" => "value_f_a",
+		"/10\\w+/$value" => "10_something_${value}"
+	},
+	"g.a" => "value_g_a"
+}
+
+h = hash_factory(conf_dict)
+hash_examples = [
+	["a","value_a"],
+	["b","value_b"],
+	["c","enum_c"],
+	["d","enum_d"],
+	["e.bacon.user","e_bacon_user"],
+	["f.a","value_f_a"],
+	["f.10bacon","10_something_10bacon"],
+	["g.a","value_g_a"],
+]
+
+hash_examples.each do |entry|
+	path, expected = entry
+	actual = h
+	path.split(".").each do	|label|
+		actual = actual[label]
+	end
+	#sorted = shuffled.sort {|a,b| compare_patterns a, b}
+	output = "Path: #{path} Expected: '#{expected}' Actual: '#{actual}'\n"
+	output = actual == expected ? "PASS ".green + output : "FAIL ".red + output
+	print output
+end
+
+#h = hash_factory(conf_dict)
+#puts h["a"]
+#puts h["b"]
+#puts h["c"]
+#puts h["d"]
+#puts h["g"]["a"]
+#puts h["f"]["a"]
+#puts h["e"]["bacon"]["user"]

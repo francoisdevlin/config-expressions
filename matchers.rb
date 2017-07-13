@@ -5,6 +5,10 @@ class PatternState
 		@evaluated_path= []
 		@variables= {}
 	end
+
+	def to_s
+		"#{@path}, #{@evaluate_path}, #{@variables}"
+	end
 end
 
 class Label

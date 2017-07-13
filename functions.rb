@@ -1,18 +1,5 @@
 require_relative 'matchers'
 
-def determine_matches(local_path,config)
-	matches = []
-	sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
-	(0..local_path.size).each do |index|
-		sub_path = local_path.take(index+1)
-		sorted_matches.each do |key|
-			result = match(key,sub_path)
-			matches << [sub_path,key] if result
-		end
-	end
-	return matches
-end
-
 def get_label_info(key)
 	matches = key.scan(/(.*)\$(\w+)$/)
 	return key,nil if matches == []
@@ -42,17 +29,38 @@ def parse_processors(key)
 	return processors
 end
 
+def determine_matches(local_path,config)
+	matches = []
+	key_status = :missing
+	sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
+	(0..local_path.size).each do |index|
+		sub_path = local_path.take(index+1)
+		sorted_matches.each do |key|
+			result = match(key,sub_path)
+			#print "Determine: #{sub_path}, #{key} ,#{result}\n"
+			key_status = :incomplete if result == :incomplete
+			matches << [sub_path,key] if result == :complete
+		end
+	end
+	return key_status if matches.size == 0
+	return matches
+end
+
 def match(key,path)
 	processors = parse_processors(key)
 	state = PatternState.new
 	state.path = path
+	#print "State: #{state}\n"
 	processors.each do |processor|
+		return :incomplete if state.path.size == 0
 		state = processor.next(state)
+		#print "State: #{state}\n"
 		if(state.path.nil?)
-			return false
+			return :missing
 		end
 	end
-	return state.path.size == 0
+	return :complete if state.path.size == 0
+	return :incomplete
 end
 
 def compare_patterns(left,right)
@@ -93,7 +101,12 @@ end
 
 def recursive_search(path,value)
 	results = determine_matches(path,value)
+	#print "Recusive Results: #{path}, #{results}, #{value}\n"
+	worst = :missing
+	worst = :incomplete if results == :incomplete
+	return results unless results.instance_of? Array
 	results.each do |result|
+		#print "In Block: #{path}, #{result}\n"
 		sub_path, hit_key = result
 		next_value = value[hit_key]
 		next if next_value.nil?
@@ -111,7 +124,31 @@ def recursive_search(path,value)
 			return next_value 
 		end
 		next_result = recursive_search(path.drop(sub_path.size),next_value)
-		return next_result unless next_result.nil?
+		#print "Next Result: #{next_result} \n"
+		next if next_result.instance_of? Array
+		next if next_result == :missing
+		worst = :incomplete if next_result == :incomplete
+		next if next_result == :incomplete
+		return next_result
 	end
-	return nil
+	return worst
+end
+
+def hash_lambda_factory(curried_path,conf)
+	return Proc.new  do |h, k|
+		local_path = curried_path.clone << k
+		value = recursive_search(local_path,conf)
+		#print "#{local_path},#{value}\n"
+		if value == :missing
+			h[k] = nil
+		elsif value == :incomplete
+			h[k] = Hash.new(&hash_lambda_factory(local_path,conf))
+		else
+			h[k] = value
+		end
+	end
+end
+
+def hash_factory(conf)
+	return Hash.new &hash_lambda_factory([],conf)
 end
