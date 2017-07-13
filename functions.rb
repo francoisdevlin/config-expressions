@@ -37,7 +37,6 @@ def determine_matches(local_path,config)
 		sub_path = local_path.take(index+1)
 		sorted_matches.each do |key|
 			result = match(key,sub_path)
-			#print "Determine: #{sub_path}, #{key} ,#{result}\n"
 			key_status = :incomplete if result == :incomplete
 			matches << [sub_path,key] if result == :complete
 		end
@@ -50,11 +49,9 @@ def match(key,path)
 	processors = parse_processors(key)
 	state = PatternState.new
 	state.path = path
-	#print "State: #{state}\n"
 	processors.each do |processor|
 		return :incomplete if state.path.size == 0
 		state = processor.next(state)
-		#print "State: #{state}\n"
 		if(state.path.nil?)
 			return :missing
 		end
@@ -101,12 +98,10 @@ end
 
 def recursive_search(path,value)
 	results = determine_matches(path,value)
-	#print "Recusive Results: #{path}, #{results}, #{value}\n"
 	worst = :missing
 	worst = :incomplete if results == :incomplete
 	return results unless results.instance_of? Array
 	results.each do |result|
-		#print "In Block: #{path}, #{result}\n"
 		sub_path, hit_key = result
 		next_value = value[hit_key]
 		next if next_value.nil?
@@ -124,7 +119,6 @@ def recursive_search(path,value)
 			return next_value 
 		end
 		next_result = recursive_search(path.drop(sub_path.size),next_value)
-		#print "Next Result: #{next_result} \n"
 		next if next_result.instance_of? Array
 		next if next_result == :missing
 		worst = :incomplete if next_result == :incomplete
@@ -138,7 +132,6 @@ def hash_lambda_factory(curried_path,conf)
 	return Proc.new  do |h, k|
 		local_path = curried_path.clone << k
 		value = recursive_search(local_path,conf)
-		#print "#{local_path},#{value}\n"
 		if value == :missing
 			h[k] = nil
 		elsif value == :incomplete
