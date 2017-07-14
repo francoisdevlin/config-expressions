@@ -4,6 +4,9 @@ require 'optparse'
 require_relative 'matchers'
 require_relative 'functions'
 
+command = ARGV[0]
+args = ARGV.drop(1)
+
 config_file_path="conf.jsonw"
 opt_parser = OptionParser.new do |opts|
       opts.banner = "Usage: example.rb [options]"
@@ -18,8 +21,8 @@ opt_parser = OptionParser.new do |opts|
       end
 end
 
-opt_parser.parse!(ARGV)
-conf_path = ARGV[0];
+opt_parser.parse!(args)
+conf_path = args[0];
 
 path = conf_path.split('.')
 config_file = File.read(config_file_path)
@@ -29,9 +32,13 @@ start_state = PatternState.new
 start_state.path = path
 
 result = recursion_2(start_state,config)
-result = result.reject{|a,b| b.state == :missing }
-if result.nil? or result.size == 0 or result[0][1].state != :complete
-	puts "Could not find #{conf_path}"
-	exit 1
+
+if command == "lookup" 
+	result = result.reject{|a,b| b.state == :missing }
+	if result.nil? or result.size == 0 or result[0][1].state != :complete
+		puts "Could not find #{conf_path}"
+		exit 1
+	end
+	puts result[0][1].value
+	exit 0
 end
-puts result[0][1].value

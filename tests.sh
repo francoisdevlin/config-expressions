@@ -24,7 +24,7 @@ for EXAMPLE_DIR in $(find examples -type d -depth 1); do
 			echo -e "$(echo -e "$LINE" | sed -e 's/#//')\n" >> $OUTPUT_MD_FILE
 		else
 			read -r INPUT EXPECTED_OUTPUT <<< "$LINE"
-			ACTUAL_OUTPUT=$($TEST_COMMAND --file $CONF_FILE $INPUT)
+			ACTUAL_OUTPUT=$($TEST_COMMAND lookup --file $CONF_FILE $INPUT)
 			ACTUAL_CODE=$?
 			RESULT="PASS"
 			if [ "$ACTUAL_CODE" != "0" ]; then
@@ -39,7 +39,7 @@ for EXAMPLE_DIR in $(find examples -type d -depth 1); do
 			else
 				echo -e "\x1B[1;31m$RESULT\x1B[0m - Input: '$INPUT' Actual: '$ACTUAL_OUTPUT' Expected: '$EXPECTED_OUTPUT'"
 			fi
-			echo "    $ $TEST_COMMAND $INPUT" >> $OUTPUT_MD_FILE
+			echo "    $ $TEST_COMMAND lookup $INPUT" >> $OUTPUT_MD_FILE
 			echo -e "    '$ACTUAL_OUTPUT'\n     " >> $OUTPUT_MD_FILE
 		fi
 	done < <(cat $PASSING_FILE | grep '.')
