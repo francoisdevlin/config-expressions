@@ -175,6 +175,7 @@ def recursion_2(input_state,value)
 				output << [state.evaluated_path.join("."), state]
 				next
 			end
+			state.locality << pattern
 			output.concat recursion_2(state,next_value)
 		else 
 			output << [state.evaluated_path.join("."), state]

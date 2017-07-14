@@ -66,9 +66,13 @@ elsif command == "explain"
 	i = 0
 	print "The following rules were evaluated in this order, the first hit is returned\n"
 	final_result = nil
+	locality = nil;
 	result.each do |pattern,state|
 		i+= 1
-
+		if (state.locality != locality)
+			print "Entering locality '#{state.locality.join(".")}'\n"
+		end
+		locality = state.locality
 		print "Rule %5d: #{explain state}\n" %[i]
 		final_result = state.value if state.state == :complete and final_result.nil?
 	end

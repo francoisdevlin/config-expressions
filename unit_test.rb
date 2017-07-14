@@ -13,7 +13,6 @@ class String
 	def gray; "\e[37m#{self}\e[0m" end
 end
 
-=begin
 data = [
 	["test","test.a","incomplete"],
 	["g","g.a","incomplete"],
@@ -48,7 +47,7 @@ data.each do |entry|
 	actual = match(key,test_path)
 	output =  "'#{key}', '#{path_text}', Expected: '#{expected}' Actual:'#{actual}'  \n"
 	output = actual.to_s == expected ? "PASS ".green + output : "FAIL ".red + output
-	#print output
+	print output
 end
 
 sort_examples = [
@@ -68,7 +67,6 @@ sort_examples.each do |entry|
 	output = sorted == entry ? "PASS ".green + output : "FAIL ".red + output
 	print output
 end
-=end
 
 conf_dict = {
 	"a" => "value_a",
@@ -108,7 +106,6 @@ hash_examples.each do |entry|
 	output = actual == expected ? "PASS ".green + output : "FAIL ".red + output
 	#print output
 end
-=end
 
 start_state = PatternState.new
 start_state.path = ["h","a"]
@@ -119,6 +116,7 @@ list = recursion_2(start_state,conf_dict)
 list.each do |a,b|
 	print "#{a}, #{b}\n"
 end
+=end
 
 #h = hash_factory(conf_dict)
 #puts h["a"]

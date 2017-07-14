@@ -1,8 +1,9 @@
 class PatternState
-	attr_accessor :path, :evaluated_path, :variables, :state, :value
+	attr_accessor :path, :evaluated_path, :variables, :state, :value, :locality
 
 	def initialize()
 		@evaluated_path= []
+		@locality= []
 		@variables= {}
 		@state=:incomplete
 	end
@@ -25,6 +26,7 @@ class Label
 		output = PatternState.new
 		output.evaluated_path = state.evaluated_path.clone
 		output.variables = state.variables.clone
+		output.locality = state.locality.clone
 		return output if state.path.nil?
 		rest, consumed = both(state.path.clone)
 		output.path = rest
