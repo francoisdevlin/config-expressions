@@ -26,10 +26,10 @@ Vanillia JSON is a configuration format we are all used to using.  There is a lo
 
 This will produce the following output
 
-    $ ./pattern-getter.rb lookup development.app1.db.user
+    $ ./config-expression lookup development.app1.db.user
     'app1_user'
      
-    $ ./pattern-getter.rb lookup development.app2.db.user
+    $ ./config-expression lookup development.app2.db.user
     'app2_user'
      
 ## 002 basic wildcard
@@ -54,23 +54,23 @@ Let's us a wildcard pattern to exact out some of the common functionality.  You'
 
 This will produce the following output
 
-    $ ./pattern-getter.rb lookup development.app1.db.user
+    $ ./config-expression lookup development.app1.db.user
     'app1_user'
      
-    $ ./pattern-getter.rb lookup development.app2.db.user
+    $ ./config-expression lookup development.app2.db.user
     'app2_user'
      
-    $ ./pattern-getter.rb lookup development.app1.db.url
+    $ ./config-expression lookup development.app1.db.url
     'jdbc:h2:/sample/path'
      
 You can see that `app2.db.url` matches the more specific input
 
-    $ ./pattern-getter.rb lookup development.app2.db.url
+    $ ./config-expression lookup development.app2.db.url
     'jdbc:h2:/other/path'
      
 We can also get a value for entries that aren't specified explicitly, such as `app9.db.url`
 
-    $ ./pattern-getter.rb lookup development.app9.db.url
+    $ ./config-expression lookup development.app9.db.url
     'jdbc:h2:/sample/path'
      
 ## 003 basic substitution
@@ -92,12 +92,12 @@ This will produce the following output
 
 Notice that the matched part of the path is substituted into the returned value
 
-    $ ./pattern-getter.rb lookup development.app1.db.user
+    $ ./config-expression lookup development.app1.db.user
     'app1_user'
      
 The url does not have any substitution, so no changes are made
 
-    $ ./pattern-getter.rb lookup development.app1.db.url
+    $ ./config-expression lookup development.app1.db.url
     'jdbc:h2:/sample/path'
      
 ## 004 basic enum
@@ -122,15 +122,15 @@ This example shows to to use an enum, with variable substition.  You'll notice t
 
 This will produce the following output
 
-    $ ./pattern-getter.rb lookup development.app1.db.user
+    $ ./config-expression lookup development.app1.db.user
     'enum_app1_user'
      
-    $ ./pattern-getter.rb lookup development.app2.db.user
+    $ ./config-expression lookup development.app2.db.user
     'enum_app2_user'
      
 Notice that the wildcard pattern is matched after the enum is exhausted
 
-    $ ./pattern-getter.rb lookup development.app9.db.user
+    $ ./config-expression lookup development.app9.db.user
     'app9_user'
      
 ## 005 basic regex
@@ -156,15 +156,15 @@ The enum matcher is a valuable way to use a union type.  However, you must expli
 
 This will produce the following output
 
-    $ ./pattern-getter.rb lookup development.app1.db.user
+    $ ./config-expression lookup development.app1.db.user
     'regex_app1_user'
      
-    $ ./pattern-getter.rb lookup development.app2.db.user
+    $ ./config-expression lookup development.app2.db.user
     'regex_app2_user'
      
 Notice the built in anchors to the regex, so this value falls through to the wildcard pattern
 
-    $ ./pattern-getter.rb lookup development.app10.db.user
+    $ ./config-expression lookup development.app10.db.user
     'app10_user'
      
 ## 006 complete precedence
@@ -190,21 +190,21 @@ This example shows the complete precedence of patterns of the same locality.  Th
 
 This will produce the following output
 
-    $ ./pattern-getter.rb lookup development.app1.db.user
+    $ ./config-expression lookup development.app1.db.user
     'user'
      
-    $ ./pattern-getter.rb lookup development.app2.db.user
+    $ ./config-expression lookup development.app2.db.user
     'enum_app2_user'
      
-    $ ./pattern-getter.rb lookup development.app3.db.user
+    $ ./config-expression lookup development.app3.db.user
     'regex_app3_user'
      
-    $ ./pattern-getter.rb lookup development.app10.db.user
+    $ ./config-expression lookup development.app10.db.user
     'wildcard_app10_user'
      
 Notice that the entire matched path is substituted
 
-    $ ./pattern-getter.rb lookup development.other_app.server.user
+    $ ./config-expression lookup development.other_app.server.user
     'deep_wildcard_other_app.server_user'
      
 ## 007 locality vs specificity
@@ -228,15 +228,15 @@ You can see that more specific rules still win if they have the same locality, i
 
 This will produce the following output
 
-    $ ./pattern-getter.rb lookup development.app1.db.url
+    $ ./config-expression lookup development.app1.db.url
     'jdbc:h2:/sample/path'
      
-    $ ./pattern-getter.rb lookup development.app2.db.url
+    $ ./config-expression lookup development.app2.db.url
     'jdbc:h2:/other/path'
      
 Noting matches locally inside the `development` dictionary, so the engine falls back on the global value
 
-    $ ./pattern-getter.rb lookup development.app1.service.url
+    $ ./config-expression lookup development.app1.service.url
     'jdbc:h2:/used'
      
 ## 008 db connections
@@ -293,31 +293,31 @@ This drastically cuts down on the amount of busywork that is required for config
 
 This will produce the following output
 
-    $ ./pattern-getter.rb lookup localhost.db.driver
+    $ ./config-expression lookup localhost.db.driver
     'org.h2.Driver'
      
-    $ ./pattern-getter.rb lookup localhost.sample.db.domain
+    $ ./config-expression lookup localhost.sample.db.domain
     'sample'
      
-    $ ./pattern-getter.rb lookup dev02.sample.db.password
+    $ ./config-expression lookup dev02.sample.db.password
     'dev002a_'
      
-    $ ./pattern-getter.rb lookup dev02.sample.db.username
+    $ ./config-expression lookup dev02.sample.db.username
     'sa'
      
-    $ ./pattern-getter.rb lookup dev02.payment.db.username
+    $ ./config-expression lookup dev02.payment.db.username
     'DDO_PAYMT_DBA_READ'
      
-    $ ./pattern-getter.rb lookup localhost.sample.db.username
+    $ ./config-expression lookup localhost.sample.db.username
     'sa'
      
-    $ ./pattern-getter.rb lookup localhost.sample.db.password
+    $ ./config-expression lookup localhost.sample.db.password
     ''
      
-    $ ./pattern-getter.rb lookup qa01.sample.db.password
+    $ ./config-expression lookup qa01.sample.db.password
     'deb09_Qa7'
      
-    $ ./pattern-getter.rb lookup dev02.sample.db.url
+    $ ./config-expression lookup dev02.sample.db.url
     'jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc'
      
 ### Further optimization

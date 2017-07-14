@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-TEST_COMMAND="./pattern-getter.rb"
+TEST_COMMAND="./config-expression"
 
 OUTPUT_CODE=0;
 
