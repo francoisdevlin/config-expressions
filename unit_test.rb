@@ -13,7 +13,7 @@ class String
 	def gray; "\e[37m#{self}\e[0m" end
 end
 
-
+=begin
 data = [
 	["test","test.a","incomplete"],
 	["g","g.a","incomplete"],
@@ -48,7 +48,7 @@ data.each do |entry|
 	actual = match(key,test_path)
 	output =  "'#{key}', '#{path_text}', Expected: '#{expected}' Actual:'#{actual}'  \n"
 	output = actual.to_s == expected ? "PASS ".green + output : "FAIL ".red + output
-	print output
+	#print output
 end
 
 sort_examples = [
@@ -68,6 +68,7 @@ sort_examples.each do |entry|
 	output = sorted == entry ? "PASS ".green + output : "FAIL ".red + output
 	print output
 end
+=end
 
 conf_dict = {
 	"a" => "value_a",
@@ -78,9 +79,12 @@ conf_dict = {
 		"a" => "value_f_a",
 		"/10\\w+/$value" => "10_something_${value}"
 	},
-	"g.a" => "value_g_a"
+	"g.a" => "value_g_a",
+	"h,i$enum" => {
+		"a" => "nested_${enum}_a",
+	},
 }
-
+=begin
 h = hash_factory(conf_dict)
 hash_examples = [
 	["a","value_a"],
@@ -102,7 +106,18 @@ hash_examples.each do |entry|
 	#sorted = shuffled.sort {|a,b| compare_patterns a, b}
 	output = "Path: #{path} Expected: '#{expected}' Actual: '#{actual}'\n"
 	output = actual == expected ? "PASS ".green + output : "FAIL ".red + output
-	print output
+	#print output
+end
+=end
+
+start_state = PatternState.new
+start_state.path = ["h","a"]
+#start_state.path = ["e","a","user"]
+#list = determine_match_states(start_state,conf_dict)
+list = recursion_2(start_state,conf_dict)
+#list = list.reject{|a,b| b.state == :missing }
+list.each do |a,b|
+	print "#{a}, #{b}\n"
 end
 
 #h = hash_factory(conf_dict)

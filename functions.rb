@@ -24,6 +24,7 @@ def parse_processors(key)
 			result = DirectHit.new(label)
 		end
 		result.variable = variable
+		result.label=split_keys[index]
 		result
 	end
 	return processors
@@ -59,6 +60,29 @@ def match(key,path)
 	return :complete if state.path.size == 0
 	return :incomplete
 end
+
+def match_state(key,state)
+	processors = parse_processors(key)
+	processors.each do |processor|
+		return state if state.path.size == 0
+		state = processor.next(state)
+		if(state.path.nil?)
+			state.state = :missing
+			return state
+		end
+	end
+	state.state = :complete if state.path.size == 0
+	return state
+end
+
+def determine_match_states(start_state,config)
+	sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
+	results = sorted_matches.collect do | match |
+		[match, match_state(match,start_state)]
+	end
+	return results
+end
+
 
 def compare_patterns(left,right)
 	deep_wildcard_penalty=10000
@@ -126,6 +150,37 @@ def recursive_search(path,value)
 		return next_result
 	end
 	return worst
+end
+
+def recursion_2(input_state,value)
+	results = determine_match_states(input_state,value)
+	output = []
+	results.each do |pattern,state|
+		if state.state == :complete
+			next_value = value[pattern]
+			if next_value.nil?
+				state.state = :key_miss_bro if next_value.nil?
+			elsif next_value.instance_of? Hash
+				state.state = :too_short_bro if next_value.instance_of Hash
+			end
+			state.variables.each do |var, var_val|
+				next_value = next_value.gsub("${#{var}}",var_val)
+			end
+			state.value = next_value
+			output << [state.evaluated_path.join("."), state]
+		elsif state.state == :incomplete
+			next_value = value[pattern]
+			if next_value.nil?
+				state.state = :key_miss_bro if next_value.nil?
+				output << [state.evaluated_path.join("."), state]
+				next
+			end
+			output.concat recursion_2(state,next_value)
+		else 
+			output << [state.evaluated_path.join("."), state]
+		end
+	end
+	return output
 end
 
 def hash_lambda_factory(curried_path,conf)

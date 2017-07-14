@@ -25,9 +25,13 @@ path = conf_path.split('.')
 config_file = File.read(config_file_path)
 config = JSON.parse(config_file)
 
-result = recursive_search(path,config)
-if result.nil?
+start_state = PatternState.new
+start_state.path = path
+
+result = recursion_2(start_state,config)
+result = result.reject{|a,b| b.state == :missing }
+if result.nil? or result.size == 0 or result[0][1].state != :complete
 	puts "Could not find #{conf_path}"
 	exit 1
 end
-puts result
+puts result[0][1].value

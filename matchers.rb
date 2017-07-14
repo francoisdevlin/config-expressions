@@ -1,19 +1,21 @@
 class PatternState
-	attr_accessor :path, :evaluated_path, :variables
+	attr_accessor :path, :evaluated_path, :variables, :state, :value
 
 	def initialize()
 		@evaluated_path= []
 		@variables= {}
+		@state=:incomplete
 	end
 
 	def to_s
-		"#{@path}, #{@evaluate_path}, #{@variables}"
+		"Path Left: #{self.path}, Path Traversed: #{self.evaluated_path}, Known Variables: #{self.variables} State: #{self.state} Value #{self.value}"
 	end
 end
 
 class Label
 	@variable
-	attr_accessor :variable
+	@label
+	attr_accessor :variable, :label
 
 	def consume(path)
 		both(path)[0]
@@ -21,13 +23,13 @@ class Label
 
 	def next(state)
 		output = PatternState.new
-		return output if state.path.nil?
-		rest, consumed = both(state.path)
-		return output if rest.nil?
-		output.path = rest
 		output.evaluated_path = state.evaluated_path.clone
-		output.evaluated_path << consumed
 		output.variables = state.variables.clone
+		return output if state.path.nil?
+		rest, consumed = both(state.path.clone)
+		output.path = rest
+		output.evaluated_path << label
+		return output if rest.nil?
 		output.variables[@variable]=consumed.join(".") if @variable
 		return output
 	end
