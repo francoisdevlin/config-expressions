@@ -45,12 +45,17 @@ start_state.path = path
 result = recursion_2(start_state,config)
 
 
-def explain(state)
+def explain(state, conf)
 	rule = state.evaluated_path.join(".")
 	if state.state == :complete
 		return "HIT ".green + ": #{rule} VALUE: '#{state.value}'"
 	else
-		return "MISS".red   + ": #{rule}, ignoring any children".gray
+		value = conf
+		state.evaluated_path.each {|p| value = value[p] unless value.nil?}
+		has_children = value.instance_of? Hash
+		message =  ": #{rule}"
+		message += ", ignoring children" if has_children
+		return "MISS".red + message.gray
 	end
 end
 
@@ -73,7 +78,7 @@ elsif command == "explain"
 			print "Entering locality '#{state.locality.join(".")}'\n"
 		end
 		locality = state.locality
-		print "Rule %5d: #{explain state}\n" %[i]
+		print "Rule %5d: #{explain state, config}\n" %[i]
 		final_result = state.value if state.state == :complete and final_result.nil?
 	end
 	if final_result.nil?
