@@ -1,5 +1,5 @@
-# Patterns Reference
-The following patterns are available in a label, with the high precedence matches towards the top
+# Expressions Reference
+The following expressions are available in a label, with the high precedence matches towards the top
 
 1. An exact match
 1. An enum match
@@ -38,7 +38,7 @@ A deep wildcard match is specified like this
 
 	**.c
 
-This will match anything ending with `.c`, such as `a.b.c`, `b.c`, or even `c`.  The pattern is greedy, so it will also match `a.b.c.c`
+This will match anything ending with `.c`, such as `a.b.c`, `b.c`, or even `c`.  The expression is greedy, so it will also match `a.b.c.c`
 
 # Learning More
 
@@ -46,6 +46,6 @@ There are collection of directories that include the actual source for this docu
 
 * A config file, conf.jsonw
 * A set of expected keys, in passing-keys.csv
-* A human readable explaination of the test case, in input.md
+* A human readable explanation of the test case, in input.md
 
 You can play with these yourself, or add items to them.  Run the `tests.sh` command to regenerate this documentation.

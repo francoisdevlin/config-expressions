@@ -1,7 +1,7 @@
 Managing configuration is hard.  One of the main risks is that there is a lot of needless repetition in a configuration file, which introduces noise.  This project is an effort to increase the amount of signal in a configuration and reduce the noise.  Some core precepts:
 
 * Configurations always get values as a path
-* Configirations are heirarchical
+* Configurations are hierarchical
 * Configurations are read centric
 * It should be possible to place convention on top of configuration
 
@@ -12,7 +12,7 @@ The goals of this project are:
 * Provide a human friendly explanation as to why as certain value was chosen
 * Support multiple platforms (java, ruby, go, js, .NET)
 * Support vanilla JSON as an config format
-* Allow serialized config information to be tranmitted easily
+* Allow serialized config information to be transmitted easily
 
 # The format
 Please see examples/README.md for more details

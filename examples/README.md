@@ -1,9 +1,9 @@
-The goal of this document is to show both the _why_ as much as the _how_ to use this pattern matching library.  It starts by walking you through an example of a static, vanilla JSON file, and adds more an more features to add more an more power.  At the end is a reference section on each pattern
+The goal of this document is to show both the _why_ as much as the _how_ to use configuration expressions.  It starts by walking you through an example of a static, vanilla JSON file, and adds more an more features to add more an more power.  At the end is a reference section on each expression
 
 # Learning by Example
 Let's start with a very basi example, using vanilla JSON
 ## 001 vanilla json
-Vanillia JSON is a configuration format we are all used to using.  There is a lot of pre-existing configuration written as vanilla JSON, so reaing it directly made sense as a starting point for the tool.  It is where you will start when trying to abstract out patterns from pre-existing files
+Vanilla JSON is a configuration format we are all used to using.  There is a lot of pre-existing configuration written as vanilla JSON, so reading it directly made sense as a starting point for the tool.  It is where you will start when trying to abstract out expressions from pre-existing files
 
 
     {
@@ -74,7 +74,7 @@ We can also get a value for entries that aren't specified explicitly, such as `a
     'jdbc:h2:/sample/path'
      
 ## 003 basic substitution
-This example shows to to use basic variable subsitution with a wildcard.  It matches keys that are static, such as app1.db, as well as keys that are dynamic, such as app9.
+This example shows to to use basic variable substitution with a wildcard.  It matches keys that are static, such as app1.db, as well as keys that are dynamic, such as app9.
 
 
     {
@@ -101,7 +101,7 @@ The url does not have any substitution, so no changes are made
     'jdbc:h2:/sample/path'
      
 ## 004 basic enum
-This example shows to to use an enum, with variable substition.  You'll notice the following:
+This example shows to to use an enum, with variable substitution.  You'll notice the following:
 
 * The key `app1,app2,app3$app_name.db.user` specifies an enumeration for 3 apps
 * The exact value of the enumeration is being captured in the variable `app_name`
@@ -134,7 +134,7 @@ Notice that the wildcard pattern is matched after the enum is exhausted
     'app9_user'
      
 ## 005 basic regex
-The enum matcher is a valuable way to use a union type.  However, you must explicitly include every match you want to include.  Sometimes it is more useful to match a more general pattern, such as a regular expression.  This example shows a regex matcher at work.  The regex is specified in the pattern `/app\\w/$app_name.db.user`. Notice the following
+The enum matcher is a valuable way to use a union type.  However, you must explicitly include every match you want to include.  Sometimes it is more useful to match a more general pattern, such as a regular expression.  This example shows a regex matcher at work.  The regex is specified in the expression `/app\\w/$app_name.db.user`. Notice the following
 
 * The regex is specified with `/` delimters on each end.  
 * The exact value of the regex is being captured in the variable `app_name`
@@ -168,7 +168,7 @@ Notice the built in anchors to the regex, so this value falls through to the wil
     'app10_user'
      
 ## 006 complete precedence
-This example shows the complete precedence of patterns of the same locality.  The order is
+This example shows the complete precedence of expressions of the same locality.  The order is
 
 1. Direct Match
 2. Enum Match
@@ -210,9 +210,9 @@ Notice that the entire matched path is substituted
 ## 007 locality vs specificity
 Locality is established by creating a new dictionary object
 
-This example shows local instructions winning oevr global ones.  Observe development.app1.db.url.  Even thought the global rule is more specific, the specification of a local wildcard rule overrides the global one.  This is because the most local rules win a conflict. 
+This example shows local instructions winning oevr global ones.  Observe development.app1.db.url.  Even thought the global expression is more specific, the specification of a local wildcard expression overrides the global one.  This is because the most local expression wins a conflict. 
 
-You can see that more specific rules still win if they have the same locality, in development.app2.db.url
+You can see that more specific expressions still win if they have the same locality, in `development.app2.db.url`
 
 
     {
@@ -240,7 +240,7 @@ Noting matches locally inside the `development` dictionary, so the engine falls 
     'jdbc:h2:/used'
      
 ## 008 db connections
-This is an example from real life.  The original file was approximately 360 lines of vanilla JSON.  This replacement version comes in at about 40 lines.  An order of magnitude improvment.  Not only is this a smaller file, but the real gains come when extending your system
+This is an example from real life.  The original file was approximately 360 lines of vanilla JSON.  This replacement version comes in at about 40 lines.  An order of magnitude improvement.  Not only is this a smaller file, but the real gains come when extending your system
 
 * Adding new environments is a breeze, it will only require adding a top level url
 * Adding a new database will usually require adding a user entry to the `*` locality
@@ -332,8 +332,8 @@ It is possible to optimize this event further with a small change to process.  F
 
 This will also remove the need to even maintain a list of usernames in _configuration_, as our pattern file will provide a _convention_ instead.
 
-# Patterns Reference
-The following patterns are available in a label, with the high precedence matches towards the top
+# Expressions Reference
+The following expressions are available in a label, with the high precedence matches towards the top
 
 1. An exact match
 1. An enum match
@@ -372,7 +372,7 @@ A deep wildcard match is specified like this
 
 	**.c
 
-This will match anything ending with `.c`, such as `a.b.c`, `b.c`, or even `c`.  The pattern is greedy, so it will also match `a.b.c.c`
+This will match anything ending with `.c`, such as `a.b.c`, `b.c`, or even `c`.  The expression is greedy, so it will also match `a.b.c.c`
 
 # Learning More
 
@@ -380,6 +380,6 @@ There are collection of directories that include the actual source for this docu
 
 * A config file, conf.jsonw
 * A set of expected keys, in passing-keys.csv
-* A human readable explaination of the test case, in input.md
+* A human readable explanation of the test case, in input.md
 
 You can play with these yourself, or add items to them.  Run the `tests.sh` command to regenerate this documentation.

@@ -1,4 +1,4 @@
-This example shows the complete precedence of patterns of the same locality.  The order is
+This example shows the complete precedence of expressions of the same locality.  The order is
 
 1. Direct Match
 2. Enum Match
