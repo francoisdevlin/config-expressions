@@ -268,7 +268,7 @@ Here you can see how the engine determines which expression to use for `developm
     Rule     4: MISS: development.app1.service
     Rule     5: MISS: development.app2
     jdbc:h2:/sample/path
-Bacon Bacon Bacon...
+And here you can see there are no hits locally, and the global value is the highest priority hit
 
     $ ./config-expression explain development.app1.service.url jdbc:h2:/used
     The following rules were evaluated in this order, the first hit is returned
