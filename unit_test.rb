@@ -44,7 +44,9 @@ data = [
 data.each do |entry| 
 	key, path_text, expected = entry
 	test_path = path_text.split(".")
-	actual = match(key,test_path)
+	start_state = PatternState.new
+	start_state.path = test_path
+	actual = match_state(key,start_state).state
 	output =  "'#{key}', '#{path_text}', Expected: '#{expected}' Actual:'#{actual}'  \n"
 	output = actual.to_s == expected ? "PASS ".green + output : "FAIL ".red + output
 	print output
