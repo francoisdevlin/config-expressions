@@ -373,6 +373,63 @@ It is possible to optimize this event further with a small change to process.  F
 
 This will also remove the need to even maintain a list of usernames in _configuration_, as our pattern file will provide a _convention_ instead.
 
+## 010 collisions
+Sometimes you will create a situation where your path will resolve to multiple expressions of the same priority.  In this case, the engine won't know what to do.  Here is an example
+
+
+    {
+    	"development": {
+    		"app1,app2.db.url" : "jdbc:h2:/first/path",
+    		"app2,app3.db.url" : "jdbc:h2:/other/path",
+    
+    		"/app\\w+/.db.url" : "jdbc:h2:/regex/path",
+    		"/ap\\w+/.db.url" : "jdbc:h2:/other_regex/path"
+    	}
+    }
+
+The following examples will fail:
+
+This is ambiguous, because it matches two enums
+
+    $ ./config-expression lookup development.app2.db.url
+    Ambiguous match for 'development.app2.db.url', the following expressions have the same priority:
+    'development.app1,app2.db.url'
+    'development.app2,app3.db.url'
+This is ambiguous, because it matches two regexes
+
+    $ ./config-expression lookup development.app4.db.url
+    Ambiguous match for 'development.app4.db.url', the following expressions have the same priority:
+    'development./app\w+/.db.url'
+    'development./ap\w+/.db.url'
+In the next section we'll see how to resolve the abiguity
+
+## 011 collision resolution
+The proper way to resolve this abiguity for the paths in question is to provide a higher priority expression that is not ambiguous.  Here we are using direct matches to resolve the conflicts
+
+
+    {
+    	"development": {
+    		"app1,app2.db.url" : "jdbc:h2:/first/path",
+    		"app2,app3.db.url" : "jdbc:h2:/other/path",
+    
+    		"/app\\w+/.db.url" : "jdbc:h2:/regex/path",
+    		"/ap\\w+/.db.url" : "jdbc:h2:/other_regex/path",
+    
+    		"app2.db.url" : "jdbc:h2:/direct/path",
+    		"app4.db.url" : "jdbc:h2:/another_direct/path"
+    	}
+    }
+
+This will produce the following output
+
+    $ ./config-expression lookup development.app2.db.url
+    'jdbc:h2:/direct/path'
+     
+    $ ./config-expression lookup development.app4.db.url
+    'jdbc:h2:/another_direct/path'
+     
+In this example the regex patterns themselves are fairly poorly chosen, an you would probably want ot refactor the expressions
+
 # Expressions Reference
 The following expressions are available in a label, with the high precedence matches towards the top
 

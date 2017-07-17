@@ -1,0 +1,9 @@
+{
+	"development": {
+		"app1,app2.db.url" : "jdbc:h2:/first/path",
+		"app2,app3.db.url" : "jdbc:h2:/other/path",
+
+		"/app\\w+/.db.url" : "jdbc:h2:/regex/path",
+		"/ap\\w+/.db.url" : "jdbc:h2:/other_regex/path"
+	}
+}

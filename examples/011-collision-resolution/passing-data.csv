@@ -1,0 +1,3 @@
+development.app2.db.url jdbc:h2:/direct/path
+development.app4.db.url jdbc:h2:/another_direct/path
+#In this example the regex patterns themselves are fairly poorly chosen, an you would probably want ot refactor the expressions

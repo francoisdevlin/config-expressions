@@ -67,7 +67,15 @@ if command == "lookup"
 		puts "Could not find #{conf_path}"
 		exit 1
 	end
-	puts result[0][1].value
+	highest_expression = result[0][0]
+	highest_result = result[0][1]
+	repeats = result.select{|a,b| compare_patterns(highest_expression,a) == 0 and highest_result.locality == b.locality}
+	if repeats.size > 1
+		print "Ambiguous match for '#{conf_path}', the following expressions have the same priority:\n"
+		repeats.each {|a,b| print "'#{a}'\n"}
+		exit 1
+	end
+	puts highest_result.value
 	exit 0
 elsif command == "explain"
 	i = 0
