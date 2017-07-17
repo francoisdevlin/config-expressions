@@ -121,6 +121,22 @@ def recursion_2(input_state,value)
 	return output
 end
 
+def detect_ambiguous_match(input)
+	result = input.reject{|a,b| b.state == :missing }
+	if result.nil? or result.size == 0 or result[0][1].state != :complete
+		return input
+	end
+	highest_expression = result[0][0]
+	highest_result = result[0][1]
+	collide = Proc.new {|a,b| compare_patterns(highest_expression,a) == 0 and highest_result.locality == b.locality}
+	repeats = result.select &collide
+	if repeats.size == 1
+		return input
+	end
+	input.each {|a,b| b.state=:collision if collide.call(a,b)}
+	return input
+end
+
 #TODO - Revive this
 #def hash_lambda_factory(curried_path,conf)
 	#return Proc.new  do |h, k|
