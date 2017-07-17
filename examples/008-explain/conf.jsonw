@@ -1,0 +1,10 @@
+{
+	"development.app1.db.url" : "jdbc:h2:/not/used",
+	"development.app1.service.url" : "jdbc:h2:/used",
+	"development.app2.db.url" : "jdbc:h2:/also/not/used",
+
+	"development": {
+		"app2.db.url" : "jdbc:h2:/other/path",
+		"*.db.url" : "jdbc:h2:/sample/path"
+	}
+}

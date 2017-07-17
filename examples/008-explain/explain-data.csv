@@ -1,0 +1,4 @@
+#Here you can see how the engine determines which expression to use for `development.app1.db.url`
+development.app1.db.url 
+#And here you can see there are no hits locally, and the global value is the highest priority hit
+development.app1.service.url jdbc:h2:/used

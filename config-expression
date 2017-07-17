@@ -8,6 +8,7 @@ command = ARGV[0]
 args = ARGV.drop(1)
 
 config_file_path="conf.jsonw"
+$no_color = false
 opt_parser = OptionParser.new do |opts|
       opts.banner = "Usage: example.rb [options]"
 
@@ -19,17 +20,18 @@ opt_parser = OptionParser.new do |opts|
               "Reads json config from file, defaults to #{config_file_path}") do |conf_file|
       	config_file_path = conf_file 
       end
+      opts.on("--no-color", "Disables color in the output") {|v| $no_color=true}
 end
 
 class String
-	def black; "\e[30m#{self}\e[0m" end
-	def red; "\e[31m#{self}\e[0m" end
-	def green; "\e[32m#{self}\e[0m" end
-	def brown; "\e[33m#{self}\e[0m" end
-	def blue; "\e[34m#{self}\e[0m" end
-	def magenta; "\e[35m#{self}\e[0m" end
-	def cyan; "\e[36m#{self}\e[0m" end
-	def gray; "\e[37m#{self}\e[0m" end
+	def black;  $no_color ? self  : "\e[30m#{self}\e[0m" end
+	def red; $no_color ? self : "\e[31m#{self}\e[0m" end
+	def green;  $no_color ? self : "\e[32m#{self}\e[0m" end
+	def brown;  $no_color ? self : "\e[33m#{self}\e[0m" end
+	def blue;  $no_color ? self : "\e[34m#{self}\e[0m" end
+	def magenta;  $no_color ? self : "\e[35m#{self}\e[0m" end
+	def cyan;  $no_color ? self : "\e[36m#{self}\e[0m" end
+	def gray;  $no_color ? self : "\e[37m#{self}\e[0m" end
 end
 
 opt_parser.parse!(args)

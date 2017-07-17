@@ -239,7 +239,48 @@ Noting matches locally inside the `development` dictionary, so the engine falls 
     $ ./config-expression lookup development.app1.service.url
     'jdbc:h2:/used'
      
-## 008 db connections
+## 008 explain
+Sometimes it can be difficult to reason about how each configuation expression is being evaluated.  Fortunately, there is the `explain` command to assit with that.
+
+
+    {
+    	"development.app1.db.url" : "jdbc:h2:/not/used",
+    	"development.app1.service.url" : "jdbc:h2:/used",
+    	"development.app2.db.url" : "jdbc:h2:/also/not/used",
+    
+    	"development": {
+    		"app2.db.url" : "jdbc:h2:/other/path",
+    		"*.db.url" : "jdbc:h2:/sample/path"
+    	}
+    }
+
+The explain command can be used to gain insight into why the tool returned a certain value for an expression
+
+Here you can see how the engine determines which expression to use for `development.app1.db.url`
+
+    $ ./config-expression explain development.app1.db.url
+    The following rules were evaluated in this order, the first hit is returned
+    Entering locality 'development'
+    Rule     1: MISS: development.app2
+    Rule     2: HIT : development.*.db.url VALUE: 'jdbc:h2:/sample/path'
+    Entering locality ''
+    Rule     3: HIT : development.app1.db.url VALUE: 'jdbc:h2:/not/used'
+    Rule     4: MISS: development.app1.service
+    Rule     5: MISS: development.app2
+    jdbc:h2:/sample/path
+Bacon Bacon Bacon...
+
+    $ ./config-expression explain development.app1.service.url jdbc:h2:/used
+    The following rules were evaluated in this order, the first hit is returned
+    Entering locality 'development'
+    Rule     1: MISS: development.app2
+    Rule     2: MISS: development.*.db
+    Entering locality ''
+    Rule     3: MISS: development.app1.db
+    Rule     4: HIT : development.app1.service.url VALUE: 'jdbc:h2:/used'
+    Rule     5: MISS: development.app2
+    jdbc:h2:/used
+## 009 db connections
 This is an example from real life.  The original file was approximately 360 lines of vanilla JSON.  This replacement version comes in at about 40 lines.  An order of magnitude improvement.  Not only is this a smaller file, but the real gains come when extending your system
 
 * Adding new environments is a breeze, it will only require adding a top level url
