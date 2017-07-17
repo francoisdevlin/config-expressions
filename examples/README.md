@@ -261,24 +261,24 @@ Here you can see how the engine determines which expression to use for `developm
     $ ./config-expression explain development.app1.db.url
     The following rules were evaluated in this order, the first hit is returned
     Entering locality 'development'
-    Rule     1: MISS: development.app2
-    Rule     2: HIT : development.*.db.url VALUE: 'jdbc:h2:/sample/path'
+    Rule     1: MISS   : development.app2
+    Rule     2: HIT    : development.*.db.url VALUE: 'jdbc:h2:/sample/path'
     Entering locality ''
-    Rule     3: HIT : development.app1.db.url VALUE: 'jdbc:h2:/not/used'
-    Rule     4: MISS: development.app1.service
-    Rule     5: MISS: development.app2
+    Rule     3: HIT    : development.app1.db.url VALUE: 'jdbc:h2:/not/used'
+    Rule     4: MISS   : development.app1.service
+    Rule     5: MISS   : development.app2
     jdbc:h2:/sample/path
 And here you can see there are no hits locally, and the global value is the highest priority hit
 
     $ ./config-expression explain development.app1.service.url jdbc:h2:/used
     The following rules were evaluated in this order, the first hit is returned
     Entering locality 'development'
-    Rule     1: MISS: development.app2
-    Rule     2: MISS: development.*.db
+    Rule     1: MISS   : development.app2
+    Rule     2: MISS   : development.*.db
     Entering locality ''
-    Rule     3: MISS: development.app1.db
-    Rule     4: HIT : development.app1.service.url VALUE: 'jdbc:h2:/used'
-    Rule     5: MISS: development.app2
+    Rule     3: MISS   : development.app1.db
+    Rule     4: HIT    : development.app1.service.url VALUE: 'jdbc:h2:/used'
+    Rule     5: MISS   : development.app2
     jdbc:h2:/used
 ## 009 db connections
 This is an example from real life.  The original file was approximately 360 lines of vanilla JSON.  This replacement version comes in at about 40 lines.  An order of magnitude improvement.  Not only is this a smaller file, but the real gains come when extending your system
@@ -403,6 +403,29 @@ This is ambiguous, because it matches two regexes
     'development./ap\w+/.db.url'
 In the next section we'll see how to resolve the abiguity
 
+
+The explain command can be used to gain insight into why the tool returned a certain value for an expression
+
+This generates a collision at the enum
+
+    $ ./config-expression explain development.app2.db.url
+    The following rules were evaluated in this order, the first hit is returned
+    Entering locality 'development'
+    Rule     1: COLLIDE: development.app1,app2.db.url VALUE: 'jdbc:h2:/first/path'
+    Rule     2: COLLIDE: development.app2,app3.db.url VALUE: 'jdbc:h2:/other/path'
+    Rule     3: HIT    : development./app\w+/.db.url VALUE: 'jdbc:h2:/regex/path'
+    Rule     4: HIT    : development./ap\w+/.db.url VALUE: 'jdbc:h2:/other_regex/path'
+    jdbc:h2:/regex/path
+This generates a collision at the regex
+
+    $ ./config-expression explain development.app4.db.url
+    The following rules were evaluated in this order, the first hit is returned
+    Entering locality 'development'
+    Rule     1: MISS   : development.app1,app2
+    Rule     2: MISS   : development.app2,app3
+    Rule     3: COLLIDE: development./app\w+/.db.url VALUE: 'jdbc:h2:/regex/path'
+    Rule     4: COLLIDE: development./ap\w+/.db.url VALUE: 'jdbc:h2:/other_regex/path'
+    Could not find development.app4.db.url
 ## 011 collision resolution
 The proper way to resolve this abiguity for the paths in question is to provide a higher priority expression that is not ambiguous.  Here we are using direct matches to resolve the conflicts
 

@@ -27,7 +27,7 @@ class String
 	def black;  $no_color ? self  : "\e[30m#{self}\e[0m" end
 	def red; $no_color ? self : "\e[31m#{self}\e[0m" end
 	def green;  $no_color ? self : "\e[32m#{self}\e[0m" end
-	def brown;  $no_color ? self : "\e[33m#{self}\e[0m" end
+	def yellow;  $no_color ? self : "\e[33m#{self}\e[0m" end
 	def blue;  $no_color ? self : "\e[34m#{self}\e[0m" end
 	def magenta;  $no_color ? self : "\e[35m#{self}\e[0m" end
 	def cyan;  $no_color ? self : "\e[36m#{self}\e[0m" end
@@ -50,34 +50,60 @@ result = recursion_2(start_state,config)
 def explain(state, conf)
 	rule = state.evaluated_path.join(".")
 	if state.state == :complete
-		return "HIT ".green + ": #{rule} VALUE: '#{state.value}'"
+		return "HIT    ".green + ": #{rule} VALUE: '#{state.value}'"
+	elsif state.state == :collision
+		return "COLLIDE".red + ": #{rule} VALUE: '#{state.value}'"
 	else
 		value = conf
 		state.evaluated_path.each {|p| value = value[p] unless value.nil?}
 		has_children = value.instance_of? Hash
 		message =  ": #{rule}"
 		message += ", ignoring children" if has_children
-		return "MISS".red + message.gray
+		return "MISS   ".yellow + message.gray
 	end
 end
 
+def detect_ambiguous_match(input)
+	result = input.reject{|a,b| b.state == :missing }
+	highest_expression = result[0][0]
+	highest_result = result[0][1]
+	if result.nil? or result.size == 0 or highest_result.state != :complete
+		return input
+	end
+	collide = Proc.new {|a,b| compare_patterns(highest_expression,a) == 0 and highest_result.locality == b.locality}
+	repeats = result.select &collide
+	if repeats.size == 1
+		return input
+	end
+	input.each {|a,b| b.state=:collision if collide.call(a,b)}
+	return input
+end
+
+result = detect_ambiguous_match(result)
 if command == "lookup" 
 	result = result.reject{|a,b| b.state == :missing }
-	if result.nil? or result.size == 0 or result[0][1].state != :complete
+	highest_expression = result[0][0]
+	highest_result = result[0][1]
+	if result.nil? or result.size == 0
 		puts "Could not find #{conf_path}"
 		exit 1
 	end
-	highest_expression = result[0][0]
-	highest_result = result[0][1]
-	repeats = result.select{|a,b| compare_patterns(highest_expression,a) == 0 and highest_result.locality == b.locality}
-	if repeats.size > 1
+
+	if highest_result.state == :complete
+		puts highest_result.value
+		exit 0
+	end
+
+	if highest_result.state == :collision
+		repeats = result.select{|a,b| b.state == :collision}
 		print "Ambiguous match for '#{conf_path}', the following expressions have the same priority:\n"
 		repeats.each {|a,b| print "'#{a}'\n"}
 		exit 1
 	end
-	puts highest_result.value
-	exit 0
+	puts "Could not find #{conf_path}"
+	exit 1
 elsif command == "explain"
+	#result = detect_ambiguous_match(result)
 	i = 0
 	print "The following rules were evaluated in this order, the first hit is returned\n"
 	final_result = nil
