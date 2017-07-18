@@ -399,16 +399,16 @@ This is ambiguous, because it matches two enums
 
     $ ./config-expression lookup development.app2.db.url
     Ambiguous match for 'development.app2.db.url', the following expressions have the same priority:
-    'development.app1,app2.db.url'
-    'development.app2,app3.db.url'
-    'development./app\w+/.db.url'
-    'development./ap\w+/.db.url'
+    'app1,app2.db.url'
+    'app2,app3.db.url'
+    '/app\w+/.db.url'
+    '/ap\w+/.db.url'
 This is ambiguous, because it matches two regexes
 
     $ ./config-expression lookup development.app4.db.url
     Ambiguous match for 'development.app4.db.url', the following expressions have the same priority:
-    'development./app\w+/.db.url'
-    'development./ap\w+/.db.url'
+    '/app\w+/.db.url'
+    '/ap\w+/.db.url'
 This is abiguous because it matches two enums at the top level
 
     $ ./config-expression lookup qa.example

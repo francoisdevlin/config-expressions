@@ -103,6 +103,11 @@ def compare_patterns(left,right)
 	return 0
 end
 
+def pretty_key(pattern,state)
+	output = state.evaluated_path.join(".")
+	return [output,pattern].max {|x| x.size}
+end
+
 def recursion_2(input_state,value)
 	results = determine_match_states(input_state,value)
 	output = []
@@ -118,18 +123,18 @@ def recursion_2(input_state,value)
 				next_value = next_value.gsub("${#{var}}",var_val)
 			end
 			state.value = next_value
-			output << [state.evaluated_path.join("."), state]
+			output << [pretty_key(pattern,state), state]
 		elsif state.state == :incomplete
 			next_value = value[pattern]
 			if next_value.nil?
 				state.state = :key_miss_bro if next_value.nil?
-				output << [state.evaluated_path.join("."), state]
+				output << [pretty_key(pattern,state), state]
 				next
 			end
 			state.locality << pattern
 			output.concat recursion_2(state,next_value)
 		else 
-			output << [state.evaluated_path.join("."), state]
+			output << [pretty_key(pattern,state), state]
 		end
 	end
 	return output
