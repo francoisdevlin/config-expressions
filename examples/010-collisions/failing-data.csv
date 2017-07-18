@@ -2,4 +2,6 @@
 development.app2.db.url
 #This is ambiguous, because it matches two regexes
 development.app4.db.url 
+#This is abiguous because it matches two enums at the top level
+qa.example
 #In the next section we'll see how to resolve the abiguity

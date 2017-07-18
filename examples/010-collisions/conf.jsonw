@@ -5,5 +5,11 @@
 
 		"/app\\w+/.db.url" : "jdbc:h2:/regex/path",
 		"/ap\\w+/.db.url" : "jdbc:h2:/other_regex/path"
+	},
+	"development,qa": {
+		"example": "value_1"
+	},
+	"qa,production": {
+		"example": "value_2"
 	}
 }

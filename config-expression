@@ -63,7 +63,6 @@ def explain(state, conf)
 	end
 end
 
-result = detect_ambiguous_match(result)
 if command == "lookup" 
 	result = result.reject{|a,b| b.state == :missing }
 	if result.nil? or result.size == 0

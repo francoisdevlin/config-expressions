@@ -46,8 +46,22 @@ end
 
 def determine_match_states(start_state,config)
 	sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
+	previous_iteration_pattern = ""
+	previous_iteration_state = nil
 	results = sorted_matches.collect do | match |
-		[match, match_state(match,start_state)]
+		same_class = compare_patterns(previous_iteration_pattern,match) == 0
+		next_state = match_state(match,start_state)
+		if 1 && 
+			same_class && 
+			!previous_iteration_state.nil? && 
+			[:complete,:incomplete].include?(next_state.state) &&
+			[:complete,:incomplete,:collision].include?(previous_iteration_state.state)
+			previous_iteration_state.state = :collision
+			next_state.state = :collision
+		end
+		previous_iteration_pattern = match
+		previous_iteration_state = next_state
+		[match, next_state]
 	end
 	return results
 end
@@ -119,22 +133,6 @@ def recursion_2(input_state,value)
 		end
 	end
 	return output
-end
-
-def detect_ambiguous_match(input)
-	result = input.reject{|a,b| b.state == :missing }
-	if result.nil? or result.size == 0 or result[0][1].state != :complete
-		return input
-	end
-	highest_expression = result[0][0]
-	highest_result = result[0][1]
-	collide = Proc.new {|a,b| compare_patterns(highest_expression,a) == 0 and highest_result.locality == b.locality}
-	repeats = result.select &collide
-	if repeats.size == 1
-		return input
-	end
-	input.each {|a,b| b.state=:collision if collide.call(a,b)}
-	return input
 end
 
 #TODO - Revive this

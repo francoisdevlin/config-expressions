@@ -384,6 +384,12 @@ Sometimes you will create a situation where your path will resolve to multiple e
     
     		"/app\\w+/.db.url" : "jdbc:h2:/regex/path",
     		"/ap\\w+/.db.url" : "jdbc:h2:/other_regex/path"
+    	},
+    	"development,qa": {
+    		"example": "value_1"
+    	},
+    	"qa,production": {
+    		"example": "value_2"
     	}
     }
 
@@ -395,12 +401,20 @@ This is ambiguous, because it matches two enums
     Ambiguous match for 'development.app2.db.url', the following expressions have the same priority:
     'development.app1,app2.db.url'
     'development.app2,app3.db.url'
+    'development./app\w+/.db.url'
+    'development./ap\w+/.db.url'
 This is ambiguous, because it matches two regexes
 
     $ ./config-expression lookup development.app4.db.url
     Ambiguous match for 'development.app4.db.url', the following expressions have the same priority:
     'development./app\w+/.db.url'
     'development./ap\w+/.db.url'
+This is abiguous because it matches two enums at the top level
+
+    $ ./config-expression lookup qa.example
+    Ambiguous match for 'qa.example', the following expressions have the same priority:
+    'development,qa'
+    'qa,production'
 In the next section we'll see how to resolve the abiguity
 
 
@@ -411,11 +425,15 @@ This generates a collision at the enum
     $ ./config-expression explain development.app2.db.url
     The following rules were evaluated in this order, the first hit is returned
     Entering locality 'development'
-    Rule     1: COLLIDE: development.app1,app2.db.url VALUE: 'jdbc:h2:/first/path'
-    Rule     2: COLLIDE: development.app2,app3.db.url VALUE: 'jdbc:h2:/other/path'
-    Rule     3: HIT    : development./app\w+/.db.url VALUE: 'jdbc:h2:/regex/path'
-    Rule     4: HIT    : development./ap\w+/.db.url VALUE: 'jdbc:h2:/other_regex/path'
-    jdbc:h2:/regex/path
+    Rule     1: COLLIDE: development.app1,app2.db.url VALUE: ''
+    Rule     2: COLLIDE: development.app2,app3.db.url VALUE: ''
+    Rule     3: COLLIDE: development./app\w+/.db.url VALUE: ''
+    Rule     4: COLLIDE: development./ap\w+/.db.url VALUE: ''
+    Entering locality 'development,qa'
+    Rule     5: MISS   : development,qa.example
+    Entering locality ''
+    Rule     6: MISS   : qa,production, ignoring children
+    Could not find development.app2.db.url
 This generates a collision at the regex
 
     $ ./config-expression explain development.app4.db.url
@@ -423,8 +441,12 @@ This generates a collision at the regex
     Entering locality 'development'
     Rule     1: MISS   : development.app1,app2
     Rule     2: MISS   : development.app2,app3
-    Rule     3: COLLIDE: development./app\w+/.db.url VALUE: 'jdbc:h2:/regex/path'
-    Rule     4: COLLIDE: development./ap\w+/.db.url VALUE: 'jdbc:h2:/other_regex/path'
+    Rule     3: COLLIDE: development./app\w+/.db.url VALUE: ''
+    Rule     4: COLLIDE: development./ap\w+/.db.url VALUE: ''
+    Entering locality 'development,qa'
+    Rule     5: MISS   : development,qa.example
+    Entering locality ''
+    Rule     6: MISS   : qa,production, ignoring children
     Could not find development.app4.db.url
 ## 011 collision resolution
 The proper way to resolve this abiguity for the paths in question is to provide a higher priority expression that is not ambiguous.  Here we are using direct matches to resolve the conflicts

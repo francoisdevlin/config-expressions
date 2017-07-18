@@ -84,7 +84,7 @@ class EnumHit < Label
 	end
 
 	def both(path)
-		return [path.drop(1),path.take(1)] if @entries.index(path[0])
+		return [path.drop(1),path.take(1)] if @entries.include?(path[0])
 		#Let's be explicit about return nil, since we're using it as a poor man's option
 		return [nil,nil]
 	end
