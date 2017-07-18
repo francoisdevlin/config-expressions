@@ -261,24 +261,24 @@ Here you can see how the engine determines which expression to use for `developm
     $ ./config-expression explain development.app1.db.url
     The following rules were evaluated in this order, the first hit is returned
     Entering locality 'development'
-    Rule     1: MISS   : development.app2
-    Rule     2: HIT    : development.*.db.url VALUE: 'jdbc:h2:/sample/path'
+    Rule     1: MISS   : app2.db.url
+    Rule     2: HIT    : *.db.url VALUE: 'jdbc:h2:/sample/path'
     Entering locality ''
     Rule     3: HIT    : development.app1.db.url VALUE: 'jdbc:h2:/not/used'
-    Rule     4: MISS   : development.app1.service
-    Rule     5: MISS   : development.app2
+    Rule     4: MISS   : development.app1.service.url
+    Rule     5: MISS   : development.app2.db.url
     jdbc:h2:/sample/path
 And here you can see there are no hits locally, and the global value is the highest priority hit
 
     $ ./config-expression explain development.app1.service.url jdbc:h2:/used
     The following rules were evaluated in this order, the first hit is returned
     Entering locality 'development'
-    Rule     1: MISS   : development.app2
-    Rule     2: MISS   : development.*.db
+    Rule     1: MISS   : app2.db.url
+    Rule     2: MISS   : *.db.url
     Entering locality ''
-    Rule     3: MISS   : development.app1.db
+    Rule     3: MISS   : development.app1.db.url
     Rule     4: HIT    : development.app1.service.url VALUE: 'jdbc:h2:/used'
-    Rule     5: MISS   : development.app2
+    Rule     5: MISS   : development.app2.db.url
     jdbc:h2:/used
 ## 009 db connections
 This is an example from real life.  The original file was approximately 360 lines of vanilla JSON.  This replacement version comes in at about 40 lines.  An order of magnitude improvement.  Not only is this a smaller file, but the real gains come when extending your system
@@ -425,12 +425,12 @@ This generates a collision at the enum
     $ ./config-expression explain development.app2.db.url
     The following rules were evaluated in this order, the first hit is returned
     Entering locality 'development'
-    Rule     1: COLLIDE: development.app1,app2.db.url VALUE: ''
-    Rule     2: COLLIDE: development.app2,app3.db.url VALUE: ''
-    Rule     3: COLLIDE: development./app\w+/.db.url VALUE: ''
-    Rule     4: COLLIDE: development./ap\w+/.db.url VALUE: ''
+    Rule     1: COLLIDE: app1,app2.db.url VALUE: ''
+    Rule     2: COLLIDE: app2,app3.db.url VALUE: ''
+    Rule     3: COLLIDE: /app\w+/.db.url VALUE: ''
+    Rule     4: COLLIDE: /ap\w+/.db.url VALUE: ''
     Entering locality 'development,qa'
-    Rule     5: MISS   : development,qa.example
+    Rule     5: MISS   : example
     Entering locality ''
     Rule     6: MISS   : qa,production, ignoring children
     Could not find development.app2.db.url
@@ -439,12 +439,12 @@ This generates a collision at the regex
     $ ./config-expression explain development.app4.db.url
     The following rules were evaluated in this order, the first hit is returned
     Entering locality 'development'
-    Rule     1: MISS   : development.app1,app2
-    Rule     2: MISS   : development.app2,app3
-    Rule     3: COLLIDE: development./app\w+/.db.url VALUE: ''
-    Rule     4: COLLIDE: development./ap\w+/.db.url VALUE: ''
+    Rule     1: MISS   : app1,app2.db.url
+    Rule     2: MISS   : app2,app3.db.url
+    Rule     3: COLLIDE: /app\w+/.db.url VALUE: ''
+    Rule     4: COLLIDE: /ap\w+/.db.url VALUE: ''
     Entering locality 'development,qa'
-    Rule     5: MISS   : development,qa.example
+    Rule     5: MISS   : example
     Entering locality ''
     Rule     6: MISS   : qa,production, ignoring children
     Could not find development.app4.db.url
