@@ -5,12 +5,21 @@ require_relative 'matchers'
 require_relative 'functions'
 
 command = ARGV[0]
+
+available_commands = ["lookup","explain"].sort
+unless available_commands.include? command
+	print "'#{command}' is not a valid command, it must be one of:\n"
+	available_commands.each {|c| print "\t#{c}\n"}
+	exit 1
+end
+
+
 args = ARGV.drop(1)
 
 config_file_path="conf.jsonw"
 $no_color = false
 opt_parser = OptionParser.new do |opts|
-      opts.banner = "Usage: example.rb [options]"
+      opts.banner = "Usage: config-expression #{command} [OPTIONS] PATH"
 
       opts.separator ""
       opts.separator "Specific options:"
@@ -86,7 +95,6 @@ if command == "lookup"
 	puts "Could not find #{conf_path}"
 	exit 1
 elsif command == "explain"
-	#result = detect_ambiguous_match(result)
 	i = 0
 	print "The following rules were evaluated in this order, the first hit is returned\n"
 	final_result = nil
