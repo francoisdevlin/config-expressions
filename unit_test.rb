@@ -84,7 +84,6 @@ conf_dict = {
 		"a" => "nested_${enum}_a",
 	},
 }
-=begin
 h = hash_factory(conf_dict)
 hash_examples = [
 	["a","value_a"],
@@ -106,9 +105,10 @@ hash_examples.each do |entry|
 	#sorted = shuffled.sort {|a,b| compare_patterns a, b}
 	output = "Path: #{path} Expected: '#{expected}' Actual: '#{actual}'\n"
 	output = actual == expected ? "PASS ".green + output : "FAIL ".red + output
-	#print output
+	print output
 end
 
+=begin
 start_state = PatternState.new
 start_state.path = ["h","a"]
 #start_state.path = ["e","a","user"]

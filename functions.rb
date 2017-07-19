@@ -117,14 +117,14 @@ def recursion_2(input_state,value)
 			if next_value.nil?
 				state.state = :key_miss_bro if next_value.nil?
 			elsif next_value.instance_of? Hash
-				state.state = :too_short_bro if next_value.instance_of Hash
+				state.state = :incomplete if next_value.instance_of? Hash
 			end
 			state.variables.each do |var, var_val|
 				next_value = next_value.gsub("${#{var}}",var_val)
 			end
 			state.value = next_value
 			output << [pretty_key(pattern,state), state]
-		elsif state.state == :incomplete
+		elsif state.state == :incomplete && state.path.size > 0
 			next_value = value[pattern]
 			if next_value.nil?
 				state.state = :key_miss_bro if next_value.nil?
@@ -141,20 +141,33 @@ def recursion_2(input_state,value)
 end
 
 #TODO - Revive this
-#def hash_lambda_factory(curried_path,conf)
-	#return Proc.new  do |h, k|
-		#local_path = curried_path.clone << k
-		#value = recursive_search(local_path,conf)
-		#if value == :missing
-			#h[k] = nil
-		#elsif value == :incomplete
-			#h[k] = Hash.new(&hash_lambda_factory(local_path,conf))
-		#else
-			#h[k] = value
-		#end
-	#end
-#end
+def hash_lambda_factory(curried_state,conf)
+	return Proc.new  do |h, k|
+		next_state = PatternState.new
+		next_state.evaluated_path = curried_state.evaluated_path.clone
+		next_state.variables = curried_state.variables.clone
+		next_state.locality = curried_state.locality.clone
+		next_state.path = curried_state.path.clone
+		next_state.path << k
+		result = recursion_2(next_state,conf).reject{|a,b| b.state == :missing}
 
-#def hash_factory(conf)
-	#return Hash.new &hash_lambda_factory([],conf)
-#end
+		highest_expression = result[0][0]
+		highest_result = result[0][1]
+
+		if highest_result.state == :missing
+			#h[k] = nil
+		elsif highest_result.state == :collision
+			raise "Collision for '#{k}'"
+		elsif highest_result.state == :incomplete
+			h[k] = Hash.new(&hash_lambda_factory(next_state,conf))
+		else
+			h[k] = highest_result.value
+		end
+	end
+end
+
+def hash_factory(conf)
+	next_state = PatternState.new
+	next_state.path = []
+	return Hash.new &hash_lambda_factory(next_state,conf)
+end
