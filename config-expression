@@ -72,6 +72,16 @@ def explain(pattern, state, conf)
 end
 
 if command == "lookup" 
+=begin	
+	h = hash_factory(config)
+	begin
+	path.each {|label| h = h[label] unless h.nil?}
+	puts h
+	rescue RuntimeError=> e
+		puts "Uh-oh: #{e}"
+		exit 1
+	end
+=end
 	result = result.reject{|a,b| b.state == :missing }
 	if result.nil? or result.size == 0
 		puts "Could not find #{conf_path}"

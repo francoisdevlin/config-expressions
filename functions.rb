@@ -150,7 +150,11 @@ def hash_lambda_factory(curried_state,conf)
 		next_state.path = curried_state.path.clone
 		next_state.path << k
 		result = recursion_2(next_state,conf).reject{|a,b| b.state == :missing}
+		result.each {|a,b| print "Result:#{b}\n"}
 
+		if result.size == 0
+			next
+		end
 		highest_expression = result[0][0]
 		highest_result = result[0][1]
 
