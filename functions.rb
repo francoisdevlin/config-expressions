@@ -45,7 +45,13 @@ def match_state(key,state)
 end
 
 def determine_match_states(start_state,config)
-	sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
+	sorted_matches = []
+	if(config.instance_of? Hash)
+		sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
+	elsif(config.instance_of? Array)
+		sorted_matches = (0..(config.size-1)).map {|x| x.to_s}
+	else
+	end
 	previous_iteration_pattern = ""
 	previous_iteration_state = nil
 	results = sorted_matches.collect do | match |
@@ -108,14 +114,22 @@ def pretty_key(pattern,state)
 	return [output,pattern].max {|x| x.size}
 end
 
+def get_next_value(value,pattern)
+	return value[pattern] if value.instance_of? Hash
+	return value[pattern.to_i] if value.instance_of? Array
+	nil	
+end
+
 def recursion_2(input_state,value)
 	results = determine_match_states(input_state,value)
 	output = []
 	results.each do |pattern,state|
 		if state.state == :complete
-			next_value = value[pattern]
+			next_value = get_next_value(value,pattern)
 			if next_value.nil?
 				state.state = :key_miss_bro if next_value.nil?
+			elsif next_value.instance_of? Array
+				state.state = :incomplete if next_value.instance_of? Array
 			elsif next_value.instance_of? Hash
 				state.state = :incomplete if next_value.instance_of? Hash
 			end
@@ -125,7 +139,7 @@ def recursion_2(input_state,value)
 			state.value = next_value
 			output << [pretty_key(pattern,state), state]
 		elsif state.state == :incomplete && state.path.size > 0
-			next_value = value[pattern]
+			next_value = get_next_value(value,pattern)
 			if next_value.nil?
 				state.state = :key_miss_bro if next_value.nil?
 				output << [pretty_key(pattern,state), state]

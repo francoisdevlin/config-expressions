@@ -1,0 +1,21 @@
+{
+	"development": {
+		"apps.dbs" : [
+			{
+				"user" : "app1_user",
+				"password" : "secret_1"
+			},
+			{
+				"user" : "app2_user",
+				"url" : "jdbc:h2:/other/path",
+				"password" : "secret_2"
+			},
+			{
+				"user" : "app3_user",
+				"password" : "secret_3"
+			}
+		],
+		"apps.dbs.*.url" : "jdbc:h2:/sample/path"
+
+	}
+}

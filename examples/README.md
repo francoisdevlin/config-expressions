@@ -475,6 +475,50 @@ This will produce the following output
      
 In this example the regex patterns themselves are fairly poorly chosen, an you would probably want ot refactor the expressions
 
+## 012 array access
+We can also access array elements like any other element
+
+
+    {
+    	"development": {
+    		"apps.dbs" : [
+    			{
+    				"user" : "app1_user",
+    				"password" : "secret_1"
+    			},
+    			{
+    				"user" : "app2_user",
+    				"url" : "jdbc:h2:/other/path",
+    				"password" : "secret_2"
+    			},
+    			{
+    				"user" : "app3_user",
+    				"password" : "secret_3"
+    			}
+    		],
+    		"apps.dbs.*.url" : "jdbc:h2:/sample/path"
+    
+    	}
+    }
+
+This will produce the following output
+
+    $ ./config-expression lookup development.apps.dbs.0.user
+    'app1_user'
+     
+    $ ./config-expression lookup development.apps.dbs.0.password
+    'secret_1'
+     
+You can see that wildcard substitution still works
+
+    $ ./config-expression lookup development.apps.dbs.0.url
+    'jdbc:h2:/sample/path'
+     
+And override rules are respected
+
+    $ ./config-expression lookup development.apps.dbs.1.url
+    'jdbc:h2:/other/path'
+     
 # Expressions Reference
 The following expressions are available in a label, with the high precedence matches towards the top
 

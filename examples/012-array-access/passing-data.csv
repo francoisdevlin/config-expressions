@@ -1,0 +1,8 @@
+development.apps.dbs.0.user app1_user
+development.apps.dbs.0.password secret_1
+
+#You can see that wildcard substitution still works
+development.apps.dbs.0.url jdbc:h2:/sample/path
+
+#And override rules are respected
+development.apps.dbs.1.url jdbc:h2:/other/path
