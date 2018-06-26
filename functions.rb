@@ -44,14 +44,20 @@ def match_state(key,state)
 	return state
 end
 
+$SORT_CACHE = {}
 def determine_match_states(start_state,config)
-	sorted_matches = []
-	if(config.instance_of? Hash)
-		sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
-	elsif(config.instance_of? Array)
-		sorted_matches = (0..(config.size-1)).map {|x| x.to_s}
-	else
+	local_path = start_state.evaluated_path.join(".")
+	unless $SORT_CACHE.key? local_path
+		sorted_matches = []
+		if(config.instance_of? Hash)
+			sorted_matches = config.keys.sort {|a,b| compare_patterns a, b}
+		elsif(config.instance_of? Array)
+			sorted_matches = (0..(config.size-1)).map {|x| x.to_s}
+		else
+		end
+		$SORT_CACHE[local_path] = sorted_matches
 	end
+	sorted_matches = $SORT_CACHE[local_path]
 	previous_iteration_pattern = ""
 	previous_iteration_state = nil
 	results = sorted_matches.collect do | match |
