@@ -14,6 +14,7 @@ class PatternState
 end
 
 class Label
+
 	@variable
 	@label
 	attr_accessor :variable, :label
@@ -42,6 +43,10 @@ class DeepWildcard < Label
 	@next_path
 	attr_accessor :next_path
 
+	def WEIGHT
+		4
+	end
+
 	def initialize(next_path)
 		@next_path= next_path
 	end
@@ -59,6 +64,10 @@ class DeepWildcard < Label
 end
 
 class DirectHit < Label
+	def WEIGHT
+		0
+	end
+
 	@element
 	attr_accessor :element
 	def initialize(element)
@@ -77,6 +86,10 @@ class DirectHit < Label
 end
 
 class EnumHit < Label
+	def WEIGHT
+		1
+	end
+
 	@entries
 	attr_accessor :entries
 	def initialize(entries)
@@ -95,6 +108,10 @@ class EnumHit < Label
 end
 
 class WildcardHit < Label
+	def WEIGHT
+		3
+	end
+
 	def both(path)
 		return [path.drop(1),path.take(1)] if path[0]
 		#Let's be explicit about return nil, since we're using it as a poor man's option
@@ -107,6 +124,10 @@ class WildcardHit < Label
 end
 
 class RegexHit < Label
+	def WEIGHT
+		2
+	end
+
 	@regex
 	attr_accessor :regex
 	def initialize(regex)

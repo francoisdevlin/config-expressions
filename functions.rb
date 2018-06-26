@@ -75,13 +75,6 @@ end
 
 def compare_patterns(left,right)
 	deep_wildcard_penalty=10000
-	symbol_order = [
-		"DirectHit",
-		"EnumHit",
-		"RegexHit",
-		"WildcardHit",
-		"DeepWildcard",
-	]
 	left_processors = parse_processors(left)
 	right_processors = parse_processors(right)
 	left_size = left_processors.size
@@ -93,8 +86,8 @@ def compare_patterns(left,right)
 	(0..left_size).each do |index|
 		leftProc = left_processors[index]
 		rightProc = right_processors[index]
-		leftWeight = symbol_order.index leftProc.class.name
-		rightWeight = symbol_order.index rightProc.class.name
+		leftWeight = leftProc.nil? ? nil : leftProc.WEIGHT 
+		rightWeight = rightProc.nil? ? nil : rightProc.WEIGHT 
 		result = leftWeight.<=> rightWeight
 		return result if result !=0
 	end
