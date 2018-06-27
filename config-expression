@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 require 'json'
 require 'optparse'
-require_relative 'matchers'
-require_relative 'functions'
+require_relative 'ruby/lib/matchers'
+require_relative 'ruby/lib/functions'
 
 command = ARGV[0]
 
