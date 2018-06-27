@@ -264,9 +264,9 @@ Here you can see how the engine determines which expression to use for `developm
     Rule     1: MISS   : app2.db.url
     Rule     2: HIT    : *.db.url VALUE: 'jdbc:h2:/sample/path'
     Entering locality ''
-    Rule     3: HIT    : development.app1.db.url VALUE: 'jdbc:h2:/not/used'
+    Rule     3: MISS   : development.app2.db.url
     Rule     4: MISS   : development.app1.service.url
-    Rule     5: MISS   : development.app2.db.url
+    Rule     5: HIT    : development.app1.db.url VALUE: 'jdbc:h2:/not/used'
     jdbc:h2:/sample/path
 And here you can see there are no hits locally, and the global value is the highest priority hit
 
@@ -276,9 +276,9 @@ And here you can see there are no hits locally, and the global value is the high
     Rule     1: MISS   : app2.db.url
     Rule     2: MISS   : *.db.url
     Entering locality ''
-    Rule     3: MISS   : development.app1.db.url
+    Rule     3: MISS   : development.app2.db.url
     Rule     4: HIT    : development.app1.service.url VALUE: 'jdbc:h2:/used'
-    Rule     5: MISS   : development.app2.db.url
+    Rule     5: MISS   : development.app1.db.url
     jdbc:h2:/used
 ## 009 db connections
 This is an example from real life.  The original file was approximately 360 lines of vanilla JSON.  This replacement version comes in at about 40 lines.  An order of magnitude improvement.  Not only is this a smaller file, but the real gains come when extending your system

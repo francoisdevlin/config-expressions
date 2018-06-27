@@ -50,10 +50,10 @@ path = conf_path.split('.')
 config_file = File.read(config_file_path)
 config = JSON.parse(config_file)
 
-start_state = PatternState.new
+start_state = ConfExpr::PatternState.new
 start_state.path = path
 
-result = recursion_2(start_state,config)
+result = ConfExpr.recursion_2(start_state,config)
 
 
 def explain(pattern, state, conf)
