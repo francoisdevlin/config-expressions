@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'confexpr'
-  s.version     = '0.1.0'
+  s.version     = '0.1.1'
   s.date        = '2018-06-28'
   s.summary     = "Config Expression"
   s.description = "A simple hello world gem"
