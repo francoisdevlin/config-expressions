@@ -4,62 +4,42 @@ import "fmt"
 import "errors"
 import "sort"
 
-func next_state(key string, state PatternState) (PatternState, error) {
-	processors, _ := parse_processors(key)
-	fmt.Println(processors)
-	fmt.Println(state)
-	for _, processor := range processors {
-		if len(state.path) == 0 {
-			return state, nil
-		}
-		state, err := processor.next(state)
-		fmt.Println(state)
-		if err != nil {
-			state.state = Missing
-			return state, nil
-		}
-	}
-	if len(state.path) == 0 {
-		state.state = Complete
-	}
-	return state, nil
-}
-
 type Result struct {
 	Key   string
 	State PatternState
 }
 
 func determine_match_states(start PatternState, rawConfig map[string]interface{}) ([]Result, error) {
-	previous_iteration_pattern := ""
-	//_ = previous_interation_pattern
-	var prev_state *PatternState = nil
-	//sorted_matches \c := rawConfig
 	sorted_matches := []string{}
 	for key, _ := range rawConfig {
 		sorted_matches = append(sorted_matches, key)
 	}
 
 	sort.Slice(sorted_matches, comparatorLambda(sorted_matches))
-	//fmt.Println(sorted_matches)
 
 	output := []Result{}
-	for _, match := range sorted_matches {
-		same_class, _ := compare_patterns(previous_iteration_pattern, match)
-		next_state, _ := next_state(match, start)
-		if true &&
-			(same_class == 0) &&
-			prev_state != nil &&
-			(next_state.state == Complete || next_state.state == Incomplete) &&
-			(prev_state.state == Complete || prev_state.state == Incomplete || prev_state.state == Collision) {
-			prev_state.state = Collision
-			next_state.state = Collision
-		}
-		previous_iteration_pattern = match
-		prev_state = &next_state
-		output = append(output, Result{match, next_state})
+	prev_pattern := ""
+	var prev_state *PatternState = nil
+	for _, next_pattern := range sorted_matches {
+		next_state, _ := next_state(next_pattern, start)
+		prev_pattern, prev_state = next_with_collisions(next_pattern, prev_pattern, prev_state, next_state)
+		output = append(output, Result{prev_pattern, *prev_state})
 	}
 	return output, nil
+}
+
+//DANGER IMPURE PASS BY REFEENCE
+func next_with_collisions(next_pattern, prev_pattern string, prev_state *PatternState, next PatternState) (string, *PatternState) {
+	same_class, _ := compare_patterns(prev_pattern, next_pattern)
+	if true &&
+		(same_class == 0) &&
+		prev_state != nil &&
+		(next.state == Complete || next.state == Incomplete) &&
+		(prev_state.state == Complete || prev_state.state == Incomplete || prev_state.state == Collision) {
+		prev_state.state = Collision
+		next.state = Collision
+	}
+	return next_pattern, &next
 }
 
 func Lookup(state PatternState, rawConfig map[string]interface{}) ([]Result, error) {
