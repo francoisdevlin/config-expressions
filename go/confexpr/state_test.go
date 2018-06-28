@@ -42,3 +42,18 @@ func TestNextStateHappyPath(t *testing.T) {
 		state:          Missing,
 	}, t)
 }
+
+func TestNextWithCollisions(t *testing.T) {
+	ab := []string{"a", "b"}
+	//abc := []string{"a", "b", "c"}
+	prev := NewPatternState(ab)
+	next := NewPatternState(ab)
+	prev.state = Complete
+	next.state = Complete
+	output_pattern, output_state := next_with_collisions("a.b", "a.b", &prev, next)
+	expected_state := NewPatternState(ab)
+	expected_state.state = Collision
+	expect(output_pattern, "a.b", t)
+	expect(prev, expected_state, t)
+	expect(*output_state, expected_state, t)
+}

@@ -28,20 +28,6 @@ func determine_match_states(start PatternState, rawConfig map[string]interface{}
 	return output, nil
 }
 
-//DANGER IMPURE PASS BY REFEENCE
-func next_with_collisions(next_pattern, prev_pattern string, prev_state *PatternState, next PatternState) (string, *PatternState) {
-	same_class, _ := compare_patterns(prev_pattern, next_pattern)
-	if true &&
-		(same_class == 0) &&
-		prev_state != nil &&
-		(next.state == Complete || next.state == Incomplete) &&
-		(prev_state.state == Complete || prev_state.state == Incomplete || prev_state.state == Collision) {
-		prev_state.state = Collision
-		next.state = Collision
-	}
-	return next_pattern, &next
-}
-
 func Lookup(state PatternState, rawConfig map[string]interface{}) ([]Result, error) {
 	results, err := determine_match_states(state, rawConfig)
 	if err != nil {

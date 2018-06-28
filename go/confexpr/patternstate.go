@@ -9,7 +9,7 @@ type PatternState struct {
 }
 
 func (this PatternState) String() string {
-	return fmt.Sprintf("State: %v Path: %v Evaluated_Path:%v", this.state, this.path, this.evaluated_path)
+	return fmt.Sprintf("State: %v Path: %v Evaluated_Path:%v Value:%v", this.state, this.path, this.evaluated_path, this.value)
 }
 
 func NewPatternState(path []string) PatternState {
