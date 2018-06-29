@@ -3,10 +3,11 @@ package confexpr
 import (
 	"errors"
 	"regexp"
+	"strings"
 )
 
 type Label interface {
-	both(path []string) ([]string, string, error)
+	both(path []string) ([]string, []string, error)
 }
 
 type WrappedLabel struct {
@@ -25,9 +26,9 @@ func (this WrappedLabel) next(state PatternState) (PatternState, error) {
 		output.Variables[k] = v
 	}
 	if this.variable != "" {
-		output.Variables[this.variable] = consumed
+		output.Variables[this.variable] = strings.Join(consumed, ".")
 	}
-	output.Evaluated_path = append(state.Evaluated_path, consumed)
+	output.Evaluated_path = append(state.Evaluated_path, consumed...)
 	return output, nil
 }
 
@@ -60,11 +61,11 @@ func NewWrappedLabel(iLabel Label, label, variable string) WrappedLabel {
 	return output
 }
 
-func (this DirectHit) both(path []string) ([]string, string, error) {
+func (this DirectHit) both(path []string) ([]string, []string, error) {
 	if path[0] == this.element {
-		return path[1:], path[0], nil
+		return path[1:], path[:1], nil
 	} else {
-		return []string{}, "", errors.New("Path not found")
+		return []string{}, []string{}, errors.New("Path not found")
 	}
 }
 
@@ -82,11 +83,11 @@ func NewEnumHit(values []string) EnumHit {
 	}
 }
 
-func (this EnumHit) both(path []string) ([]string, string, error) {
+func (this EnumHit) both(path []string) ([]string, []string, error) {
 	if _, found := this.values[path[0]]; found {
-		return path[1:], path[0], nil
+		return path[1:], path[:1], nil
 	}
-	return path, "", errors.New("Path not found")
+	return path, []string{}, errors.New("Path not found")
 }
 
 type RegexHit struct {
@@ -99,12 +100,12 @@ func NewRegexHit(regex string) RegexHit {
 	}
 }
 
-func (this RegexHit) both(path []string) ([]string, string, error) {
+func (this RegexHit) both(path []string) ([]string, []string, error) {
 	r := regexp.MustCompile("^" + this.regex + "$")
 	if r.MatchString(path[0]) {
-		return path[1:], path[0], nil
+		return path[1:], path[:1], nil
 	}
-	return path, "", errors.New("Path not found")
+	return path, []string{}, errors.New("Path not found")
 }
 
 type Wildcard struct {
@@ -114,6 +115,6 @@ func NewWildcard() Wildcard {
 	return Wildcard{}
 }
 
-func (this Wildcard) both(path []string) ([]string, string, error) {
-	return path[1:], path[0], nil
+func (this Wildcard) both(path []string) ([]string, []string, error) {
+	return path[1:], path[:1], nil
 }
