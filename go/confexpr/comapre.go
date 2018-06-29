@@ -2,12 +2,22 @@ package confexpr
 
 import "strings"
 
+func deepWildcardPenalty(labels []WrappedLabel) int {
+	output := 0
+	for _, label := range labels {
+		if _, dw := label.Label.(DeepWildcard); dw {
+			output += 10000
+		}
+	}
+	return output
+}
+
 func compare_patterns(left, right string) (int, error) {
 	left_processors, _ := parse_processors(left)
 	right_processors, _ := parse_processors(right)
 
-	left_score := len(left_processors)
-	right_score := len(right_processors)
+	left_score := len(left_processors) + deepWildcardPenalty(left_processors)
+	right_score := len(right_processors) + deepWildcardPenalty(right_processors)
 
 	if left_score-right_score != 0 {
 		return left_score - right_score, nil

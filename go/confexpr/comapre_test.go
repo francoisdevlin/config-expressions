@@ -12,6 +12,7 @@ func TestSortStuff(t *testing.T) {
 	evaluateSort([]string{"z", "*", "a.a", "a.b"}, t)
 	evaluateSort([]string{"/abc/", "*"}, t)
 	evaluateSort([]string{"/abc/$app_name", "*$app_name"}, t)
+	evaluateSort([]string{"z", "*", "a.a", "a.b", "**.a"}, t)
 }
 
 func evaluateSort(expected []string, t *testing.T) {

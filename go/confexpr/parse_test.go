@@ -42,6 +42,14 @@ func TestParseProcessorsHappyPaths(t *testing.T) {
 	}, t)
 	expect(err, nil, t)
 
+	output, err = parse_processors("**.a.b")
+	expect(output, []WrappedLabel{
+		NewWrappedLabel(NewDeepWildcard(NewDirectHit("a")), "**", ""),
+		NewWrappedLabel(NewDirectHit("a"), "a", ""),
+		NewWrappedLabel(NewDirectHit("b"), "b", ""),
+	}, t)
+	expect(err, nil, t)
+
 	//Test Variable Parsing
 	output, err = parse_processors("a$var_a.*$var_wild")
 	expect(output, []WrappedLabel{

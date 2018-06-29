@@ -51,7 +51,16 @@ func Lookup(lineArgs []string) {
 		fmt.Println(highestResult.State.Value)
 		os.Exit(0)
 	}
-	fmt.Println("Uh-oh")
+	if highestResult.State.State == confexpr.Collision {
+		repeats := confexpr.FilterCollidingResults(results)
+		fmt.Printf("Ambiguous match for '%v', the following expressions have the same priority:\n", restArgs[0])
+		for _, repeat := range repeats {
+			fmt.Printf("'%v'", repeat.Key)
+		}
+		os.Exit(1)
+	}
+
+	fmt.Printf("Could not find %v\n", restArgs[0])
 	os.Exit(1)
 
 }
