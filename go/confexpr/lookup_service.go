@@ -1,9 +1,12 @@
 package confexpr
 
-import "fmt"
-import "errors"
-import "strings"
-import "sort"
+import (
+	"errors"
+	"fmt"
+	"regexp"
+	"sort"
+	"strings"
+)
 
 type Result struct {
 	Key   string
@@ -52,6 +55,14 @@ func NewLookupService() LookupService {
 	}
 }
 
+func InterpolateVariables(state PatternState, valString string) string {
+	for variable, value := range state.Variables {
+		r := regexp.MustCompile(fmt.Sprintf("\\$\\{%s\\}", variable))
+		valString = r.ReplaceAllString(valString, value)
+	}
+	return valString
+}
+
 func (this *LookupService) Lookup(state PatternState, rawConfig map[string]interface{}) ([]Result, error) {
 	results, err := this.determine_match_states(state, rawConfig)
 	if err != nil {
@@ -63,6 +74,9 @@ func (this *LookupService) Lookup(state PatternState, rawConfig map[string]inter
 		match := result.Key
 		if state.State == Complete {
 			state.Value = rawConfig[match]
+			if valString, ok := state.Value.(string); ok {
+				state.Value = InterpolateVariables(state, valString)
+			}
 			output = append(output, Result{match, state})
 		} else if state.State == Incomplete && len(state.Path) > 0 {
 			next_value := rawConfig[match]

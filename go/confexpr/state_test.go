@@ -13,6 +13,7 @@ func TestNextStateHappyPath(t *testing.T) {
 		Path:           []string{},
 		Evaluated_path: abc,
 		State:          Complete,
+		Variables:      map[string]string{},
 	}, t)
 
 	state = NewPatternState(abc)
@@ -22,6 +23,7 @@ func TestNextStateHappyPath(t *testing.T) {
 		Path:           []string{"c"},
 		Evaluated_path: []string{"a", "b"},
 		State:          Incomplete,
+		Variables:      map[string]string{},
 	}, t)
 
 	state = NewPatternState(abc)
@@ -31,6 +33,7 @@ func TestNextStateHappyPath(t *testing.T) {
 		Path:           []string{},
 		Evaluated_path: []string{"a", "b", "c"},
 		State:          Incomplete,
+		Variables:      map[string]string{},
 	}, t)
 
 	state = NewPatternState(abc)
@@ -40,7 +43,22 @@ func TestNextStateHappyPath(t *testing.T) {
 		Path:           []string{"a", "b", "c"},
 		Evaluated_path: []string{},
 		State:          Missing,
+		Variables:      map[string]string{},
 	}, t)
+
+	next, err = next_state("a$var_a.b$var_b.c$var_c", state)
+	expect(err, nil, t)
+	expect(next, PatternState{
+		Path:           []string{},
+		Evaluated_path: abc,
+		State:          Complete,
+		Variables: map[string]string{
+			"var_a": "a",
+			"var_b": "b",
+			"var_c": "c",
+		},
+	}, t)
+
 }
 
 func TestNextWithCollisions(t *testing.T) {

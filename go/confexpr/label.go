@@ -1,6 +1,9 @@
 package confexpr
 
-import "errors"
+import (
+	"errors"
+	"regexp"
+)
 
 type Label interface {
 	both(path []string) ([]string, string, error)
@@ -18,6 +21,12 @@ func (this WrappedLabel) next(state PatternState) (PatternState, error) {
 		return state, err
 	}
 	var output = NewPatternState(rest)
+	for k, v := range state.Variables {
+		output.Variables[k] = v
+	}
+	if this.variable != "" {
+		output.Variables[this.variable] = consumed
+	}
 	output.Evaluated_path = append(state.Evaluated_path, consumed)
 	return output, nil
 }
@@ -60,25 +69,42 @@ func (this DirectHit) both(path []string) ([]string, string, error) {
 }
 
 type EnumHit struct {
+	values map[string]bool
 }
 
-func NewEnumHit() EnumHit {
-	return EnumHit{}
+func NewEnumHit(values []string) EnumHit {
+	valueCache := map[string]bool{}
+	for _, value := range values {
+		valueCache[value] = true
+	}
+	return EnumHit{
+		values: valueCache,
+	}
 }
 
 func (this EnumHit) both(path []string) ([]string, string, error) {
-	return path[1:], path[0], nil
+	if _, found := this.values[path[0]]; found {
+		return path[1:], path[0], nil
+	}
+	return path, "", errors.New("Path not found")
 }
 
 type RegexHit struct {
+	regex string
 }
 
-func NewRegexHit() RegexHit {
-	return RegexHit{}
+func NewRegexHit(regex string) RegexHit {
+	return RegexHit{
+		regex: regex,
+	}
 }
 
 func (this RegexHit) both(path []string) ([]string, string, error) {
-	return path[1:], path[0], nil
+	r := regexp.MustCompile("^" + this.regex + "$")
+	if r.MatchString(path[0]) {
+		return path[1:], path[0], nil
+	}
+	return path, "", errors.New("Path not found")
 }
 
 type Wildcard struct {

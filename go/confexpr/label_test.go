@@ -29,9 +29,9 @@ func TestWrappedLabelWeights(t *testing.T) {
 	var l Label = nil
 	l = NewDirectHit("a")
 	expect(NewWrappedLabel(l, "a", "var").WEIGHT, 0, t)
-	l = NewEnumHit()
+	l = NewEnumHit([]string{})
 	expect(NewWrappedLabel(l, "a", "var").WEIGHT, 1, t)
-	l = NewRegexHit()
+	l = NewRegexHit("app")
 	expect(NewWrappedLabel(l, "a", "var").WEIGHT, 2, t)
 	l = NewWildcard()
 	expect(NewWrappedLabel(l, "a", "var").WEIGHT, 3, t)
@@ -72,4 +72,36 @@ func TestWildcardHappyPath(t *testing.T) {
 	expect(consumed, "a", t)
 	expect(rest, []string{"b", "c"}, t)
 	expect(err, nil, t)
+}
+
+func TestRegexHitHappyPath(t *testing.T) {
+	wc := NewRegexHit("a")
+	rest, consumed, err := wc.both([]string{"a", "b", "c"})
+	expect(consumed, "a", t)
+	expect(rest, []string{"b", "c"}, t)
+	expect(err, nil, t)
+
+	wc = NewRegexHit("a.*")
+	rest, consumed, err = wc.both([]string{"a", "b", "c"})
+	expect(consumed, "a", t)
+	expect(rest, []string{"b", "c"}, t)
+	expect(err, nil, t)
+
+	wc = NewRegexHit("\\w")
+	rest, consumed, err = wc.both([]string{"a", "b", "c"})
+	expect(consumed, "a", t)
+	expect(rest, []string{"b", "c"}, t)
+	expect(err, nil, t)
+
+	wc = NewRegexHit("\\w+")
+	rest, consumed, err = wc.both([]string{"a", "b", "c"})
+	expect(consumed, "a", t)
+	expect(rest, []string{"b", "c"}, t)
+	expect(err, nil, t)
+
+	wc = NewRegexHit("d")
+	rest, consumed, err = wc.both([]string{"a", "b", "c"})
+	expect(consumed, "", t)
+	expect(rest, []string{"a", "b", "c"}, t)
+	expectError(err, "Path not found", t)
 }
