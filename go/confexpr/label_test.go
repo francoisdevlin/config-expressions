@@ -35,6 +35,8 @@ func TestWrappedLabelWeights(t *testing.T) {
 	expect(NewWrappedLabel(l, "a", "var").WEIGHT, 2, t)
 	l = NewWildcard()
 	expect(NewWrappedLabel(l, "a", "var").WEIGHT, 3, t)
+	l = NewDeepWildcard(nil)
+	expect(NewWrappedLabel(l, "a", "var").WEIGHT, 4, t)
 }
 
 func TestWrappedLabelErrorsArePropogatedUp(t *testing.T) {
@@ -74,33 +76,63 @@ func TestWildcardHappyPath(t *testing.T) {
 	expect(err, nil, t)
 }
 
+func TestDeepWildcardHappyPath(t *testing.T) {
+	dh := NewDirectHit("b")
+	dw := NewDeepWildcard(dh)
+	rest, consumed, err := dw.both([]string{"a", "b", "c"})
+	expect(consumed, []string{"a"}, t)
+	expect(rest, []string{"b", "c"}, t)
+	expect(err, nil, t)
+
+	rest, consumed, err = dw.both([]string{"a", "b", "b", "b", "c"})
+	expect(consumed, []string{"a", "b", "b"}, t)
+	expect(rest, []string{"b", "c"}, t)
+	expect(err, nil, t)
+
+	rest, consumed, err = dw.both([]string{"a", "c"})
+	expect(consumed, []string{}, t)
+	expect(rest, []string{"a", "c"}, t)
+	expectError(err, "Sucessor path not found", t)
+
+	dw = NewDeepWildcard(NewEnumHit([]string{"b", "c", "d"}))
+	rest, consumed, err = dw.both([]string{"a", "b", "c"})
+	expect(consumed, []string{"a", "b"}, t)
+	expect(rest, []string{"c"}, t)
+	expect(err, nil, t)
+
+	rest, consumed, err = dw.both([]string{"a", "e"})
+	expect(consumed, []string{}, t)
+	expect(rest, []string{"a", "e"}, t)
+	expectError(err, "Sucessor path not found", t)
+}
+
 func TestRegexHitHappyPath(t *testing.T) {
-	wc := NewRegexHit("a")
-	rest, consumed, err := wc.both([]string{"a", "b", "c"})
+	rh := NewRegexHit("a")
+	rest, consumed, err := rh.both([]string{"a", "b", "c"})
 	expect(consumed, []string{"a"}, t)
 	expect(rest, []string{"b", "c"}, t)
 	expect(err, nil, t)
 
-	wc = NewRegexHit("a.*")
-	rest, consumed, err = wc.both([]string{"a", "b", "c"})
+	rh = NewRegexHit("a.*")
+	rest, consumed, err = rh.both([]string{"a", "b", "c"})
 	expect(consumed, []string{"a"}, t)
 	expect(rest, []string{"b", "c"}, t)
 	expect(err, nil, t)
 
-	wc = NewRegexHit("\\w")
-	rest, consumed, err = wc.both([]string{"a", "b", "c"})
+	rh = NewRegexHit("\\w")
+	rest, consumed, err = rh.both([]string{"a", "b", "c"})
 	expect(consumed, []string{"a"}, t)
 	expect(rest, []string{"b", "c"}, t)
 	expect(err, nil, t)
 
-	wc = NewRegexHit("\\w+")
-	rest, consumed, err = wc.both([]string{"a", "b", "c"})
+	rh = NewRegexHit("\\w+")
+	rest, consumed, err = rh.both([]string{"a", "b", "c"})
 	expect(consumed, []string{"a"}, t)
 	expect(rest, []string{"b", "c"}, t)
 	expect(err, nil, t)
 
-	wc = NewRegexHit("d")
-	rest, consumed, err = wc.both([]string{"a", "b", "c"})
+	rh = NewRegexHit("d")
+	rest, consumed, err = rh.both([]string{"a", "b", "c"})
 	expect(consumed, []string{}, t)
 	expect(rest, []string{"a", "b", "c"}, t)
 	expectError(err, "Path not found", t)

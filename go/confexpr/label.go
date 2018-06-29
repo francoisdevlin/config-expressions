@@ -56,6 +56,8 @@ func NewWrappedLabel(iLabel Label, label, variable string) WrappedLabel {
 		output.WEIGHT = 2
 	} else if _, ok := iLabel.(Wildcard); ok {
 		output.WEIGHT = 3
+	} else if _, ok := iLabel.(DeepWildcard); ok {
+		output.WEIGHT = 4
 	}
 
 	return output
@@ -117,4 +119,28 @@ func NewWildcard() Wildcard {
 
 func (this Wildcard) both(path []string) ([]string, []string, error) {
 	return path[1:], path[:1], nil
+}
+
+type DeepWildcard struct {
+	label Label
+}
+
+func NewDeepWildcard(label Label) DeepWildcard {
+	return DeepWildcard{
+		label: label,
+	}
+}
+
+func (this DeepWildcard) both(path []string) ([]string, []string, error) {
+	maxIndex := -1
+	for index, _ := range path {
+		_, _, err := this.label.both(path[index:])
+		if err == nil {
+			maxIndex = index
+		}
+	}
+	if maxIndex == -1 {
+		return path, []string{}, errors.New("Sucessor path not found")
+	}
+	return path[maxIndex:], path[:maxIndex], nil
 }
