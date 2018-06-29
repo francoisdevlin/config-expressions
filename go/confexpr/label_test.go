@@ -48,8 +48,8 @@ func TestWrappedLabelHappyPath(t *testing.T) {
 	wl := NewWrappedLabel(NewDirectHit("a"), "", "")
 	state := NewPatternState([]string{"a", "b", "c"})
 	next_state, err := wl.next(state)
-	expect(next_state.path, []string{"b", "c"}, t)
-	expect(next_state.evaluated_path, []string{"a"}, t)
+	expect(next_state.Path, []string{"b", "c"}, t)
+	expect(next_state.Evaluated_path, []string{"a"}, t)
 	expect(err, nil, t)
 }
 

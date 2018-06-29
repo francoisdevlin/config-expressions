@@ -3,19 +3,19 @@ package confexpr
 import "fmt"
 
 type PatternState struct {
-	path, evaluated_path []string
-	state                MatchState
-	value                interface{}
+	Path, Evaluated_path []string
+	State                MatchState
+	Value                interface{}
 }
 
 func (this PatternState) String() string {
-	return fmt.Sprintf("State: %v Path: %v Evaluated_Path:%v Value:%v", this.state, this.path, this.evaluated_path, this.value)
+	return fmt.Sprintf("State: %v Path: %v Evaluated_Path:%v Value:%v", this.State, this.Path, this.Evaluated_path, this.Value)
 }
 
 func NewPatternState(path []string) PatternState {
 	return PatternState{
-		path:           path,
-		evaluated_path: []string{},
-		state:          Incomplete,
+		Path:           path,
+		Evaluated_path: []string{},
+		State:          Incomplete,
 	}
 }

@@ -3,17 +3,17 @@ package confexpr
 func next_state(key string, state PatternState) (PatternState, error) {
 	processors, err := parse_processors(key)
 	for _, processor := range processors {
-		if len(state.path) == 0 {
+		if len(state.Path) == 0 {
 			return state, nil
 		}
 		state, err = processor.next(state)
 		if err != nil {
-			state.state = Missing
+			state.State = Missing
 			return state, err
 		}
 	}
-	if len(state.path) == 0 {
-		state.state = Complete
+	if len(state.Path) == 0 {
+		state.State = Complete
 	}
 	return state, nil
 }
@@ -24,10 +24,10 @@ func next_with_collisions(next_pattern, prev_pattern string, prev_state *Pattern
 	if true &&
 		(same_class == 0) &&
 		prev_state != nil &&
-		(next.state == Complete || next.state == Incomplete) &&
-		(prev_state.state == Complete || prev_state.state == Incomplete || prev_state.state == Collision) {
-		prev_state.state = Collision
-		next.state = Collision
+		(next.State == Complete || next.State == Incomplete) &&
+		(prev_state.State == Complete || prev_state.State == Incomplete || prev_state.State == Collision) {
+		prev_state.State = Collision
+		next.State = Collision
 	}
 	return next_pattern, &next
 }

@@ -29,7 +29,7 @@ func (this *LookupService) determine_match_states(start PatternState, rawConfig 
 }
 
 func (this *LookupService) get_sort_matches(start PatternState, rawConfig map[string]interface{}) []string {
-	cacheState := strings.Join(start.evaluated_path, ".")
+	cacheState := strings.Join(start.Evaluated_path, ".")
 	sorted_matches, present := this.sortCache[cacheState]
 	if present {
 		return sorted_matches
@@ -61,10 +61,10 @@ func (this *LookupService) Lookup(state PatternState, rawConfig map[string]inter
 	for _, result := range results {
 		state := result.State
 		match := result.Key
-		if state.state == Complete {
-			state.value = rawConfig[match]
+		if state.State == Complete {
+			state.Value = rawConfig[match]
 			output = append(output, Result{match, state})
-		} else if state.state == Incomplete && len(state.path) > 0 {
+		} else if state.State == Incomplete && len(state.Path) > 0 {
 			next_value := rawConfig[match]
 			if map_next_value, ok := next_value.(map[string]interface{}); ok {
 				temp, err := this.Lookup(state, map_next_value)

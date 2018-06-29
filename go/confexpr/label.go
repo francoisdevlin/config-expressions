@@ -13,12 +13,12 @@ type WrappedLabel struct {
 }
 
 func (this WrappedLabel) next(state PatternState) (PatternState, error) {
-	var rest, consumed, err = this.Label.both(state.path)
+	var rest, consumed, err = this.Label.both(state.Path)
 	if err != nil {
 		return state, err
 	}
 	var output = NewPatternState(rest)
-	output.evaluated_path = append(state.evaluated_path, consumed)
+	output.Evaluated_path = append(state.Evaluated_path, consumed)
 	return output, nil
 }
 
