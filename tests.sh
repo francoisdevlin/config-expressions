@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-TEST_COMMAND="./config-expression"
+#TEST_COMMAND="./config-expression"
+TEST_COMMAND="go/confexpr-go"
 
 OUTPUT_CODE=0;
 

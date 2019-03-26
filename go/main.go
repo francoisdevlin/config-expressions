@@ -65,8 +65,65 @@ func Lookup(lineArgs []string) {
 
 }
 
-func Explain(restArgs []string) {
-	os.Exit(1)
+func PrintExplain(result confexpr.Result, conf map[string]interface{}) string {
+	state := result.State
+	pattern := result.Key
+	if state.State == confexpr.Complete {
+		return fmt.Sprintf("HIT    : %v VALUE: '%v'", pattern, state.Value)
+	} else if state.State == confexpr.Collision {
+		return fmt.Sprintf("COLLIDE: %v VALUE: '%v'", pattern, state.Value)
+	} else {
+		var value interface{} = conf
+		for _, key := range state.Evaluated_path {
+			mapValue, _ := value.(map[string]interface{})
+			child, present := mapValue[key]
+			if present {
+				mapChild, okay := child.(map[string]interface{})
+				if okay {
+					value = mapChild
+				}
+
+			}
+		}
+		_, hasChildren := value.(map[string]interface{})
+		message := ": " + pattern
+		if hasChildren {
+			message += ", ignoring children"
+		}
+		return "MISS   " + message
+	}
+	return ""
+}
+
+func Explain(lineArgs []string) {
+	rawConfig := map[string]interface{}{}
+	fmt.Println("The following rules were evaluated in this order, the first hit is returned")
+
+	flagSet := flag.NewFlagSet("BACON", flag.ContinueOnError)
+	confFilePath := ""
+	noColor := false
+	flagSet.StringVar(&confFilePath, "file", DEFAULT_FILE_PATH, "Bacon")
+	flagSet.BoolVar(&noColor, "no-color", false, "Bacon")
+	flagSet.Parse(lineArgs)
+	restArgs := flagSet.Args()
+
+	raw, err := ioutil.ReadFile(confFilePath)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	json.Unmarshal(raw, &rawConfig)
+
+	lookupService := confexpr.NewLookupService()
+	entries := regexp.MustCompile("\\.").Split(restArgs[0], -1)
+	start := confexpr.NewPatternState(entries)
+	results, err := lookupService.Lookup(start, rawConfig)
+
+	for index, result := range results {
+		fmt.Printf("Rule %5d: %v\n", index+1, PrintExplain(result, rawConfig))
+	}
+	os.Exit(0)
 }
 
 func main() {
