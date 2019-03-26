@@ -26,10 +26,10 @@ Vanilla JSON is a configuration format we are all used to using.  There is a lot
 
 This will produce the following output
 
-    $ ./config-expression lookup development.app1.db.user
+    $ go/confexpr-go lookup development.app1.db.user
     'app1_user'
      
-    $ ./config-expression lookup development.app2.db.user
+    $ go/confexpr-go lookup development.app2.db.user
     'app2_user'
      
 ## 002 basic wildcard
@@ -54,23 +54,23 @@ Let's us a wildcard pattern to exact out some of the common functionality.  You'
 
 This will produce the following output
 
-    $ ./config-expression lookup development.app1.db.user
+    $ go/confexpr-go lookup development.app1.db.user
     'app1_user'
      
-    $ ./config-expression lookup development.app2.db.user
+    $ go/confexpr-go lookup development.app2.db.user
     'app2_user'
      
-    $ ./config-expression lookup development.app1.db.url
+    $ go/confexpr-go lookup development.app1.db.url
     'jdbc:h2:/sample/path'
      
 You can see that `app2.db.url` matches the more specific input
 
-    $ ./config-expression lookup development.app2.db.url
+    $ go/confexpr-go lookup development.app2.db.url
     'jdbc:h2:/other/path'
      
 We can also get a value for entries that aren't specified explicitly, such as `app9.db.url`
 
-    $ ./config-expression lookup development.app9.db.url
+    $ go/confexpr-go lookup development.app9.db.url
     'jdbc:h2:/sample/path'
      
 ## 003 basic substitution
@@ -92,12 +92,12 @@ This will produce the following output
 
 Notice that the matched part of the path is substituted into the returned value
 
-    $ ./config-expression lookup development.app1.db.user
+    $ go/confexpr-go lookup development.app1.db.user
     'app1_user'
      
 The url does not have any substitution, so no changes are made
 
-    $ ./config-expression lookup development.app1.db.url
+    $ go/confexpr-go lookup development.app1.db.url
     'jdbc:h2:/sample/path'
      
 ## 004 basic enum
@@ -122,15 +122,15 @@ This example shows to to use an enum, with variable substitution.  You'll notice
 
 This will produce the following output
 
-    $ ./config-expression lookup development.app1.db.user
+    $ go/confexpr-go lookup development.app1.db.user
     'enum_app1_user'
      
-    $ ./config-expression lookup development.app2.db.user
+    $ go/confexpr-go lookup development.app2.db.user
     'enum_app2_user'
      
 Notice that the wildcard pattern is matched after the enum is exhausted
 
-    $ ./config-expression lookup development.app9.db.user
+    $ go/confexpr-go lookup development.app9.db.user
     'app9_user'
      
 ## 005 basic regex
@@ -156,15 +156,15 @@ The enum matcher is a valuable way to use a union type.  However, you must expli
 
 This will produce the following output
 
-    $ ./config-expression lookup development.app1.db.user
+    $ go/confexpr-go lookup development.app1.db.user
     'regex_app1_user'
      
-    $ ./config-expression lookup development.app2.db.user
+    $ go/confexpr-go lookup development.app2.db.user
     'regex_app2_user'
      
 Notice the built in anchors to the regex, so this value falls through to the wildcard pattern
 
-    $ ./config-expression lookup development.app10.db.user
+    $ go/confexpr-go lookup development.app10.db.user
     'app10_user'
      
 ## 006 complete precedence
@@ -190,21 +190,21 @@ This example shows the complete precedence of expressions of the same locality. 
 
 This will produce the following output
 
-    $ ./config-expression lookup development.app1.db.user
+    $ go/confexpr-go lookup development.app1.db.user
     'user'
      
-    $ ./config-expression lookup development.app2.db.user
+    $ go/confexpr-go lookup development.app2.db.user
     'enum_app2_user'
      
-    $ ./config-expression lookup development.app3.db.user
+    $ go/confexpr-go lookup development.app3.db.user
     'regex_app3_user'
      
-    $ ./config-expression lookup development.app10.db.user
+    $ go/confexpr-go lookup development.app10.db.user
     'wildcard_app10_user'
      
 Notice that the entire matched path is substituted
 
-    $ ./config-expression lookup development.other_app.server.user
+    $ go/confexpr-go lookup development.other_app.server.user
     'deep_wildcard_other_app.server_user'
      
 ## 007 locality vs specificity
@@ -228,15 +228,15 @@ You can see that more specific expressions still win if they have the same local
 
 This will produce the following output
 
-    $ ./config-expression lookup development.app1.db.url
+    $ go/confexpr-go lookup development.app1.db.url
     'jdbc:h2:/sample/path'
      
-    $ ./config-expression lookup development.app2.db.url
+    $ go/confexpr-go lookup development.app2.db.url
     'jdbc:h2:/other/path'
      
 Noting matches locally inside the `development` dictionary, so the engine falls back on the global value
 
-    $ ./config-expression lookup development.app1.service.url
+    $ go/confexpr-go lookup development.app1.service.url
     'jdbc:h2:/used'
      
 ## 008 explain
@@ -258,120 +258,22 @@ The explain command can be used to gain insight into why the tool returned a cer
 
 Here you can see how the engine determines which expression to use for `development.app1.db.url`
 
-    $ ./config-expression explain development.app1.db.url
+    $ go/confexpr-go explain development.app1.db.url
     The following rules were evaluated in this order, the first hit is returned
-    Entering locality 'development'
-    Rule     1: MISS   : app2.db.url
+    Rule     1: MISS   : app2.db.url, ignoring children
     Rule     2: HIT    : *.db.url VALUE: 'jdbc:h2:/sample/path'
-    Entering locality ''
-    Rule     3: MISS   : development.app2.db.url
-    Rule     4: MISS   : development.app1.service.url
-    Rule     5: HIT    : development.app1.db.url VALUE: 'jdbc:h2:/not/used'
-    jdbc:h2:/sample/path
+    Rule     3: HIT    : development.app1.db.url VALUE: 'jdbc:h2:/not/used'
+    Rule     4: MISS   : development.app1.service.url, ignoring children
+    Rule     5: MISS   : development.app2.db.url, ignoring children
 And here you can see there are no hits locally, and the global value is the highest priority hit
 
-    $ ./config-expression explain development.app1.service.url jdbc:h2:/used
+    $ go/confexpr-go explain development.app1.service.url jdbc:h2:/used
     The following rules were evaluated in this order, the first hit is returned
-    Entering locality 'development'
-    Rule     1: MISS   : app2.db.url
-    Rule     2: MISS   : *.db.url
-    Entering locality ''
-    Rule     3: MISS   : development.app2.db.url
+    Rule     1: MISS   : app2.db.url, ignoring children
+    Rule     2: MISS   : *.db.url, ignoring children
+    Rule     3: MISS   : development.app1.db.url, ignoring children
     Rule     4: HIT    : development.app1.service.url VALUE: 'jdbc:h2:/used'
-    Rule     5: MISS   : development.app1.db.url
-    jdbc:h2:/used
-## 009 db connections
-This is an example from real life.  The original file was approximately 360 lines of vanilla JSON.  This replacement version comes in at about 40 lines.  An order of magnitude improvement.  Not only is this a smaller file, but the real gains come when extending your system
-
-* Adding new environments is a breeze, it will only require adding a top level url
-* Adding a new database will usually require adding a user entry to the `*` locality
-
-This drastically cuts down on the amount of busywork that is required for configuration
-
-
-    {
-    	"**.username":"sa",
-    	"**.password":"",
-    	"**.db.driver":"oracle.jdbc.OracleDriver",
-    	"localhost,pipeline.db.driver" : "org.h2.Driver",
-    	"*": {
-    		"payment.db.username" : "DDO_PAYMT_DBA_READ",
-    		"account.db.username" : "DDO_ACCT_DBA_READ",
-    		"apply.db.username" : "DDO_APPLY_DBA_READ",
-    		"communications.db.username" : "DDO_NTFCN_DBA_READ",
-    		"idmap.db.username" : "DDO_IDMAP_DBA",
-    		"kyc.db.username" : "DDO_KYC_DBA_READ",
-    		"processorgateway.db.username" : "DDO_PRCSOR_DBA_READ",
-    		"analyticsgateway.db.username" : "ODS_ANLYTC_GTWY_DBA"
-    	},
-    	"localhost":{
-    		"*$domain.db.domain":"${domain}",
-    		"analyticsgateway.db.domain" : "analytics-gateway",
-    		"idmap.db.domain" : "platform-integration",
-    		"processorgateway.db.domain" : "processor-gateway"
-    	},
-    	"ukdev" : {
-    		"*.db.url" : "jdbc:oracle:thin:@//odu1-12-sl-uat.barcapint.com:3521/BCardNG.intranet.barcapint.com",
-    		"payment.db.password" : "Barclays39#",
-    		"account.db.password" : "Barclays09#",
-    		"apply.db.password" : "Barclays12#",
-    		"communications.db.password" : "Barclays33#",
-    		"idmap.db.password" : "Barclays#123"
-    	},
-    
-    	"dev02,dev03,qa03,cicluster.*.db.password" : "dev002a_",
-    	"qa01,qa02,qa04.*.db.password" : "deb09_Qa7",
-    
-    	"pipeline.*.db.url" : "jdbc:h2:/local/domains/h2/payments;AUTO_SERVER=TRUE;MODE=Oracle" ,
-    	"dev02.*.db.url" : "jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc",
-    	"dev03.*.db.url" : "jdbc:oracle:thin:@dephcld.juniper.com:1521/deph3debtomcatsvc",
-    	"qa01.*.db.url" : "jdbc:oracle:thin:@qodcld.juniper.com:1521/qdebtomcatsvc",
-    	"qa02.*.db.url" : "jdbc:oracle:thin:@roracld.juniper.com:1521/qa02crdeb_svc",
-    	"qa03.*.db.url" : "jdbc:oracle:thin:@qephcld.juniper.com:1521/qeph3debbatchsvc",
-    	"qa04.*.db.url" : "jdbc:oracle:thin:@172.18.223.135:1521/DEVOPS01",
-    	"cicluster.*.db.url" : "jdbc:oracle:thin:@dephcld.juniper.com:1521/deph3debtomcatsvc"
-    }
-
-This will produce the following output
-
-    $ ./config-expression lookup localhost.db.driver
-    'org.h2.Driver'
-     
-    $ ./config-expression lookup localhost.sample.db.domain
-    'sample'
-     
-    $ ./config-expression lookup dev02.sample.db.password
-    'dev002a_'
-     
-    $ ./config-expression lookup dev02.sample.db.username
-    'sa'
-     
-    $ ./config-expression lookup dev02.payment.db.username
-    'DDO_PAYMT_DBA_READ'
-     
-    $ ./config-expression lookup localhost.sample.db.username
-    'sa'
-     
-    $ ./config-expression lookup localhost.sample.db.password
-    ''
-     
-    $ ./config-expression lookup qa01.sample.db.password
-    'deb09_Qa7'
-     
-    $ ./config-expression lookup dev02.sample.db.url
-    'jdbc:oracle:thin:@dodcld.juniper.com:1521/ddebtomcatsvc'
-     
-### Further optimization
-
-It is possible to optimize this event further with a small change to process.  For example, if we adopt a convention that every db user must be named after the application, we can replace the `*` dictionary with one entry
-
-
-
-	"*.*$app_name.db.username" : "DDO_${app_name}_DBA_READ"
-
-
-
-This will also remove the need to even maintain a list of usernames in _configuration_, as our pattern file will provide a _convention_ instead.
+    Rule     5: MISS   : development.app2.db.url, ignoring children
 
 ## 010 collisions
 Sometimes you will create a situation where your path will resolve to multiple expressions of the same priority.  In this case, the engine won't know what to do.  Here is an example
@@ -397,24 +299,16 @@ The following examples will fail:
 
 This is ambiguous, because it matches two enums
 
-    $ ./config-expression lookup development.app2.db.url
-    Ambiguous match for 'development.app2.db.url', the following expressions have the same priority:
-    'app1,app2.db.url'
-    'app2,app3.db.url'
-    '/app\w+/.db.url'
-    '/ap\w+/.db.url'
+    $ go/confexpr-go lookup development.app2.db.url
+    jdbc:h2:/other/path
 This is ambiguous, because it matches two regexes
 
-    $ ./config-expression lookup development.app4.db.url
-    Ambiguous match for 'development.app4.db.url', the following expressions have the same priority:
-    '/app\w+/.db.url'
-    '/ap\w+/.db.url'
+    $ go/confexpr-go lookup development.app4.db.url
+    jdbc:h2:/regex/path
 This is abiguous because it matches two enums at the top level
 
-    $ ./config-expression lookup qa.example
-    Ambiguous match for 'qa.example', the following expressions have the same priority:
-    'development,qa'
-    'qa,production'
+    $ go/confexpr-go lookup qa.example
+    value_2
 In the next section we'll see how to resolve the abiguity
 
 
@@ -422,32 +316,30 @@ The explain command can be used to gain insight into why the tool returned a cer
 
 This generates a collision at the enum
 
-    $ ./config-expression explain development.app2.db.url
+    $ go/confexpr-go explain development.app2.db.url
     The following rules were evaluated in this order, the first hit is returned
-    Entering locality 'development'
-    Rule     1: COLLIDE: app1,app2.db.url VALUE: ''
-    Rule     2: COLLIDE: app2,app3.db.url VALUE: ''
-    Rule     3: COLLIDE: /app\w+/.db.url VALUE: ''
-    Rule     4: COLLIDE: /ap\w+/.db.url VALUE: ''
-    Entering locality 'development,qa'
-    Rule     5: MISS   : example
-    Entering locality ''
-    Rule     6: MISS   : qa,production, ignoring children
-    Could not find development.app2.db.url
+    Rule     1: HIT    : app2,app3.db.url VALUE: 'jdbc:h2:/other/path'
+    Rule     2: COLLIDE: app1,app2.db.url VALUE: '<nil>'
+    Rule     3: HIT    : /ap\w+/.db.url VALUE: 'jdbc:h2:/other_regex/path'
+    Rule     4: COLLIDE: /app\w+/.db.url VALUE: '<nil>'
+    Rule     5: HIT    : app2,app3.db.url VALUE: '<nil>'
+    Rule     6: COLLIDE: app1,app2.db.url VALUE: '<nil>'
+    Rule     7: HIT    : /ap\w+/.db.url VALUE: '<nil>'
+    Rule     8: COLLIDE: /app\w+/.db.url VALUE: '<nil>'
+    Rule     9: MISS   : qa,production, ignoring children
 This generates a collision at the regex
 
-    $ ./config-expression explain development.app4.db.url
+    $ go/confexpr-go explain development.app4.db.url
     The following rules were evaluated in this order, the first hit is returned
-    Entering locality 'development'
-    Rule     1: MISS   : app1,app2.db.url
-    Rule     2: MISS   : app2,app3.db.url
-    Rule     3: COLLIDE: /app\w+/.db.url VALUE: ''
-    Rule     4: COLLIDE: /ap\w+/.db.url VALUE: ''
-    Entering locality 'development,qa'
-    Rule     5: MISS   : example
-    Entering locality ''
-    Rule     6: MISS   : qa,production, ignoring children
-    Could not find development.app4.db.url
+    Rule     1: MISS   : app2,app3.db.url, ignoring children
+    Rule     2: MISS   : app1,app2.db.url, ignoring children
+    Rule     3: HIT    : /app\w+/.db.url VALUE: 'jdbc:h2:/regex/path'
+    Rule     4: COLLIDE: /ap\w+/.db.url VALUE: '<nil>'
+    Rule     5: MISS   : qa,production, ignoring children
+    Rule     6: MISS   : app2,app3.db.url, ignoring children
+    Rule     7: MISS   : app1,app2.db.url, ignoring children
+    Rule     8: HIT    : /app\w+/.db.url VALUE: '<nil>'
+    Rule     9: COLLIDE: /ap\w+/.db.url VALUE: '<nil>'
 ## 011 collision resolution
 The proper way to resolve this abiguity for the paths in question is to provide a higher priority expression that is not ambiguous.  Here we are using direct matches to resolve the conflicts
 
@@ -467,10 +359,10 @@ The proper way to resolve this abiguity for the paths in question is to provide 
 
 This will produce the following output
 
-    $ ./config-expression lookup development.app2.db.url
+    $ go/confexpr-go lookup development.app2.db.url
     'jdbc:h2:/direct/path'
      
-    $ ./config-expression lookup development.app4.db.url
+    $ go/confexpr-go lookup development.app4.db.url
     'jdbc:h2:/another_direct/path'
      
 In this example the regex patterns themselves are fairly poorly chosen, an you would probably want ot refactor the expressions
@@ -503,21 +395,21 @@ We can also access array elements like any other element
 
 This will produce the following output
 
-    $ ./config-expression lookup development.apps.dbs.0.user
-    'app1_user'
+    $ go/confexpr-go lookup development.apps.dbs.0.user
+    'Error, state: State: Incomplete Path: [0 user] Evaluated_Path:[development apps dbs] Value:<nil> Variables:map[]'
      
-    $ ./config-expression lookup development.apps.dbs.0.password
-    'secret_1'
+    $ go/confexpr-go lookup development.apps.dbs.0.password
+    'Error, state: State: Incomplete Path: [0 password] Evaluated_Path:[development apps dbs] Value:<nil> Variables:map[]'
      
 You can see that wildcard substitution still works
 
-    $ ./config-expression lookup development.apps.dbs.0.url
-    'jdbc:h2:/sample/path'
+    $ go/confexpr-go lookup development.apps.dbs.0.url
+    'Error, state: State: Incomplete Path: [0 url] Evaluated_Path:[development apps dbs] Value:<nil> Variables:map[]'
      
 And override rules are respected
 
-    $ ./config-expression lookup development.apps.dbs.1.url
-    'jdbc:h2:/other/path'
+    $ go/confexpr-go lookup development.apps.dbs.1.url
+    'Error, state: State: Incomplete Path: [1 url] Evaluated_Path:[development apps dbs] Value:<nil> Variables:map[]'
      
 # Expressions Reference
 The following expressions are available in a label, with the high precedence matches towards the top
